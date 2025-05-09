@@ -12,7 +12,7 @@ use rijndael::rijndael::sbox::{sbox, inv_sbox};
 use rijndael::rijndael::cipher::Rijndael;
 use rijndael::rijndael::key_schedule::expand_key;
 use symmetric_cipher::crypto::cipher_context::CipherContext;
-use symmetric_cipher::crypto::cipher_traits::SymmetricCipherWithRounds;
+use symmetric_cipher::crypto::cipher_traits::{SymmetricCipher, SymmetricCipherWithRounds};
 use symmetric_cipher::crypto::cipher_types::{
     CipherInput, CipherMode, CipherOutput, PaddingMode,
 };
@@ -74,10 +74,19 @@ async fn main() -> std::io::Result<()> {
             0x32,0x43,0xf6,0xa8, 0x88,0x5a,0x30,0x8d,
             0x31,0x31,0x98,0xa2, 0xe0,0x37,0x07,0x34,
         ];
-        let enc = rijndael::rijndael::cipher::aes_encrypt_block(&block, &round_keys, poly);
-        let dec = rijndael::rijndael::cipher::aes_decrypt_block(&enc, &round_keys, poly);
-        println!(" Encrypted block: {:02x?}", enc);
-        assert_eq!(dec, block);
+        let mut cipher = rijndael::rijndael::cipher::Rijndael::new(poly.clone(), 4);
+        // 2) Расширяем ключ
+        cipher.set_key(&key128).unwrap();
+
+        // 3) Посмотрим первые 4 байта второго раунда
+        let round_keys_bytes = cipher.export_round_keys().unwrap();
+        println!(" Round1 key[0..4]: {:02x?}", &round_keys_bytes[16..20]);
+
+        // 4) Шифруем и дешифруем
+        let enc_vec = cipher.encrypt_block(&block, &[]);
+        let dec_vec = cipher.decrypt_block(&enc_vec, &[]);
+        println!(" Encrypted block: {:02x?}", enc_vec);
+        assert_eq!(dec_vec, block);
     }
 
     // --------------------------------------------------------

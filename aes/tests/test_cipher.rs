@@ -1,15 +1,20 @@
 use rijndael::gf::arithmetic::Poly;
-use rijndael::{
-    rijndael::cipher::{aes_encrypt_block, aes_decrypt_block},
-    rijndael::key_schedule::expand_key,
-};
+use rijndael::rijndael::cipher::Rijndael;
+use symmetric_cipher::crypto::cipher_traits::{SymmetricCipher, SymmetricCipherWithRounds};
 
 /// Вспомогалка: строит Poly из среза битов (0 или 1)
 fn poly_from_bits(bits: &[u8]) -> Poly {
     bits.iter().map(|&b| b != 0).collect()
 }
 
-/// Вспомогалка: преобразует массив байт в [u8; 16]
+/// Вспомогалка: преобразует `Vec<u8>` длины 16 в `[u8; 16]`
+fn array_from_vec(v: Vec<u8>) -> [u8; 16] {
+    let mut a = [0u8; 16];
+    a.copy_from_slice(&v);
+    a
+}
+
+/// Вспомогалка: преобразует массив байт в `[u8; 16]`
 fn block_from_bytes(bytes: &[u8]) -> [u8; 16] {
     let mut block = [0u8; 16];
     block.copy_from_slice(bytes);
@@ -39,14 +44,21 @@ fn test_aes128_nist_vector() {
     ]);
 
     // Стандартный неприводимый полином AES: x⁸ + x⁴ + x³ + x + 1
-    let poly = poly_from_bits(&[1,1,0,1,1,0,0,0,1]);
+    let poly = poly_from_bits(&[1, 1, 0, 1, 1, 0, 0, 0, 1]);
 
-    let round_keys = expand_key(&key, &poly);
-    let cipher = aes_encrypt_block(&plaintext, &round_keys, &poly);
-    assert_eq!(cipher, expected_cipher, "AES-128 encryption mismatch");
+    // Создаём и настраиваем шифр
+    let mut cipher = Rijndael::new(poly.clone(), 4);
+    cipher.set_key(&key).unwrap();
 
-    let decrypted = aes_decrypt_block(&cipher, &round_keys, &poly);
-    assert_eq!(decrypted, plaintext, "AES-128 decryption failed to invert");
+    // Шифруем блок
+    let cipher_bytes = cipher.encrypt_block(&plaintext, &[]);
+    let actual_cipher = array_from_vec(cipher_bytes);
+    assert_eq!(actual_cipher, expected_cipher, "AES-128 encryption mismatch");
+
+    // Дешифруем обратно
+    let decrypted_bytes = cipher.decrypt_block(&actual_cipher, &[]);
+    let actual_plain = array_from_vec(decrypted_bytes);
+    assert_eq!(actual_plain, plaintext, "AES-128 decryption failed to invert");
 }
 
 #[test]
@@ -73,13 +85,17 @@ fn test_aes192_known_vector() {
         0x57, 0x1f, 0xa5, 0xcc,
     ]);
 
-    let poly = poly_from_bits(&[1,1,0,1,1,0,0,0,1]);
-    let round_keys = expand_key(&key, &poly);
-    let cipher = aes_encrypt_block(&plaintext, &round_keys, &poly);
-    assert_eq!(cipher, expected_cipher, "AES-192 encryption mismatch");
+    let poly = poly_from_bits(&[1, 1, 0, 1, 1, 0, 0, 0, 1]);
+    let mut cipher = Rijndael::new(poly.clone(), 4);
+    cipher.set_key(&key).unwrap();
 
-    let decrypted = aes_decrypt_block(&cipher, &round_keys, &poly);
-    assert_eq!(decrypted, plaintext, "AES-192 decryption failed");
+    let cipher_bytes = cipher.encrypt_block(&plaintext, &[]);
+    let actual_cipher = array_from_vec(cipher_bytes);
+    assert_eq!(actual_cipher, expected_cipher, "AES-192 encryption mismatch");
+
+    let decrypted_bytes = cipher.decrypt_block(&actual_cipher, &[]);
+    let actual_plain = array_from_vec(decrypted_bytes);
+    assert_eq!(actual_plain, plaintext, "AES-192 decryption failed");
 }
 
 #[test]
@@ -108,13 +124,17 @@ fn test_aes256_known_vector() {
         0x3d, 0xb1, 0x81, 0xf8,
     ]);
 
-    let poly = poly_from_bits(&[1,1,0,1,1,0,0,0,1]);
-    let round_keys = expand_key(&key, &poly);
-    let cipher = aes_encrypt_block(&plaintext, &round_keys, &poly);
-    assert_eq!(cipher, expected_cipher, "AES-256 encryption mismatch");
+    let poly = poly_from_bits(&[1, 1, 0, 1, 1, 0, 0, 0, 1]);
+    let mut cipher = Rijndael::new(poly.clone(), 4);
+    cipher.set_key(&key).unwrap();
 
-    let decrypted = aes_decrypt_block(&cipher, &round_keys, &poly);
-    assert_eq!(decrypted, plaintext, "AES-256 decryption failed");
+    let cipher_bytes = cipher.encrypt_block(&plaintext, &[]);
+    let actual_cipher = array_from_vec(cipher_bytes);
+    assert_eq!(actual_cipher, expected_cipher, "AES-256 encryption mismatch");
+
+    let decrypted_bytes = cipher.decrypt_block(&actual_cipher, &[]);
+    let actual_plain = array_from_vec(decrypted_bytes);
+    assert_eq!(actual_plain, plaintext, "AES-256 decryption failed");
 }
 
 #[test]
@@ -129,9 +149,14 @@ fn test_encrypt_decrypt_random() {
     rng.fill_bytes(&mut key);
     rng.fill_bytes(&mut block);
 
-    let poly = poly_from_bits(&[1,1,0,1,1,0,0,0,1]);
-    let round_keys = expand_key(&key, &poly);
-    let cipher = aes_encrypt_block(&block, &round_keys, &poly);
-    let decrypted = aes_decrypt_block(&cipher, &round_keys, &poly);
-    assert_eq!(decrypted, block, "Random encrypt/decrypt failed");
+    let poly = poly_from_bits(&[1, 1, 0, 1, 1, 0, 0, 0, 1]);
+    let mut cipher = Rijndael::new(poly.clone(), 4);
+    cipher.set_key(&key).unwrap();
+
+    let cipher_bytes = cipher.encrypt_block(&block, &[]);
+    let actual_cipher = array_from_vec(cipher_bytes);
+
+    let decrypted_bytes = cipher.decrypt_block(&actual_cipher, &[]);
+    let actual_plain = array_from_vec(decrypted_bytes);
+    assert_eq!(actual_plain, block, "Random encrypt/decrypt failed");
 }

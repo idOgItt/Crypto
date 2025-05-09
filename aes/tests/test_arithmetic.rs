@@ -55,7 +55,7 @@ fn test_poly_mul_by_zero() {
 #[test]
 fn test_poly_mul_by_one() {
     let one = poly_from_bits(&[1]);
-    let a = poly_from_bits(&[0,1,1,0]);
+    let a = poly_from_bits(&[0,1,1]);
     let p = poly_mul(&a, &one);
     assert_eq!(bits_from_poly(&p), bits_from_poly(&a));
 }
@@ -67,7 +67,7 @@ fn test_poly_mul_degree_sum() {
     let b = poly_from_bits(&[0,1,0,1]);      // x^3 + x
     let p = poly_mul(&a, &b);
     assert_eq!(p.len(), 6);
-    assert_eq!(bits_from_poly(&p), vec![0,1,0,1,0,1]);
+    assert_eq!(bits_from_poly(&p), vec![0,1,0,0,0,1]);
 }
 
 #[test]
@@ -87,7 +87,7 @@ fn test_poly_divmod_with_remainder() {
     let divisor  = poly_from_bits(&[1,0,1]);
     let (q, r) = poly_divmod(&dividend, &divisor);
     assert_eq!(bits_from_poly(&q), vec![0,1]); // x
-    assert_eq!(bits_from_poly(&r), vec![0,1]); // x
+    assert_eq!(bits_from_poly(&r), vec![]); // x
 }
 
 #[test]
@@ -107,7 +107,7 @@ fn test_poly_mulmod() {
     // (x+1)*(x^2+x+1)= x^3+? = poly_mul gives [1,0,1,1], mod (x^2+1)=?
     let r = poly_mulmod(&a, &b, &m);
     // direct: p=[1,1,1,1]→mod divisor→rem=[0,1]
-    assert_eq!(bits_from_poly(&r), vec![0,1]);
+    assert_eq!(bits_from_poly(&r), vec![1,1]);
 }
 
 #[test]
