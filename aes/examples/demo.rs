@@ -68,7 +68,7 @@ async fn main() -> std::io::Result<()> {
             0x2b,0x7e,0x15,0x16, 0x28,0xae,0xd2,0xa6,
             0xab,0xf7,0x15,0x88, 0x09,0xcf,0x4f,0x3c,
         ];
-        let round_keys = expand_key(&key128, poly);
+        let round_keys = expand_key(&key128, poly, 16);
         println!(" Round1 key[0..4]: {:02x?}", &round_keys[1][..4]);
         let block = [
             0x32,0x43,0xf6,0xa8, 0x88,0x5a,0x30,0x8d,
@@ -136,7 +136,7 @@ async fn main() -> std::io::Result<()> {
                             Some(vec![0u8; blk])
                         };
                         let mut ctx = CipherContext::new(
-                            Box::new(Rijndael::new(poly.clone(), blk)) as _,
+                            Box::new(Rijndael::new(poly.clone(), blk / 4)) as _, // Divide by 4 to convert bytes to words
                             mode, pad, iv.clone(), Vec::new()
                         );
                         ctx.set_key(&key).unwrap();
@@ -198,7 +198,7 @@ async fn main() -> std::io::Result<()> {
                                 Some(vec![0u8; blk])
                             };
                             let mut ctx = CipherContext::new(
-                                Box::new(Rijndael::new(poly.clone(), blk)) as _,
+                                Box::new(Rijndael::new(poly.clone(), blk / 4)) as _, // Divide by 4 to convert bytes to words
                                 mode, pad, iv.clone(), Vec::new()
                             );
                             ctx.set_key(&key).unwrap();

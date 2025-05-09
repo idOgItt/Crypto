@@ -58,7 +58,13 @@ fn add_round_key(state: &mut State, round_key: &[u8]) {
     let nb = state.len();
     for c in 0..nb {
         for r in 0..4 {
-            state[c][r] ^= round_key[c * 4 + r];
+            let idx = c * 4 + r;
+            if idx < round_key.len() {
+                state[c][r] ^= round_key[idx];
+            } else {
+                // Handle error case or log for debugging
+                println!("Error: round_key index {} out of bounds (len: {})", idx, round_key.len());
+            }
         }
     }
 }
@@ -236,14 +242,14 @@ impl CipherAlgorithm for Rijndael {
 
 impl SymmetricCipher for Rijndael {
     fn set_key(&mut self, key: &[u8]) -> Result<(), &'static str> {
-        self.round_keys = expand_key(key, &self.poly);
+        self.round_keys = expand_key(key, &self.poly, self.block_size * 4);
         Ok(())
     }
 }
 
 impl SymmetricCipherWithRounds for Rijndael {
     fn set_key_with_rounds(&mut self, key: &[u8]) {
-        self.round_keys = expand_key(key, &self.poly);
+        self.round_keys = expand_key(key, &self.poly, self.block_size * 4);
     }
     fn encrypt_block(&self, block: &[u8], _round_key: &[u8]) -> Vec<u8> {
         encrypt_block_internal(block, &self.round_keys, &self.poly, self.block_size)
