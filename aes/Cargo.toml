@@ -1,0 +1,11 @@
+[package]
+name = "rijndael"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+symmetric_cipher = { path = "../symmetric_cipher" }
+aes = "0.9.0-pre.3"
+cipher = "0.5.0-pre.8"
+rand = "0.9.1"
+tokio = "1.45.0"

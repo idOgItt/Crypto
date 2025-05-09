@@ -1,0 +1,40 @@
+[package]
+name = "symmetric_cipher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+bitvec = "1.0"
+rand = "0.9"
+rayon = "1.10.0"
+hex-literal = "0.3"
+futures = "0.3.31"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["async_tokio"] }
+tempfile = "3"
+tokio     = { version = "1",   features = ["full"]      }
+rand = "0.9"
+
+
+[[bench]]
+name = "cipher_bench"
+harness = false
+path = "benches/cipher_bench.rs"
+
+[[bench]]
+name = "encrypt_random_bench"
+harness = false
+
+[[bench]]
+name = "encrypt_text_bench"
+harness = false
+
+[[bench]]
+name = "encrypt_file_bench"
+harness = false
+
+
+[profile.bench]
+debug = true
