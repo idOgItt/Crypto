@@ -169,13 +169,14 @@ async fn main() -> std::io::Result<()> {
     // --------------------------------------------------------
     // 4) File encryption/decryption demo
     // --------------------------------------------------------
+    std::fs::create_dir_all("examples/output")?;
     println!("\n=== File demo ===");
     let files = [
-        "../../symmetric_cipher/examples/files/sample.txt",
-        "../../symmetric_cipher/examples/files/image.png",
-        "../../symmetric_cipher/examples/files/song.mp3",
-        "../../symmetric_cipher/examples/files/video.mp4",
-        "../../symmetric_cipher/examples/files/big.bin",
+        "../symmetric_cipher/examples/files/sample.txt",
+        "../symmetric_cipher/examples/files/image.png",
+        "../symmetric_cipher/examples/files/song.mp3",
+        "../symmetric_cipher/examples/files/video.mp4",
+        "../symmetric_cipher/examples/files/big.bin",
     ];
 
     for input in &files {
