@@ -55,7 +55,9 @@ pub fn expand_key(key: &[u8], poly: &Poly, block_size: usize) -> Vec<Vec<u8>> {
         let mut temp = w[i-1];
         if i % nk == 0 {
             temp = sub_word(rot_word(temp), poly);
-            temp[0] ^= rcon[i / nk];
+            if i / nk < rcon.len() { // Add this check
+                temp[0] ^= rcon[i / nk];
+            }
         } else if nk > 6 && i % nk == 4 {
             temp = sub_word(temp, poly);
         }

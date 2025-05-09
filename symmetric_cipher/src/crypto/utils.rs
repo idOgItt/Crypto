@@ -134,7 +134,7 @@ pub fn is_full_padding_block(data: &[u8], block_size: usize, padding: &PaddingMo
 
 /// Удаляет паддинг из расшифрованных данных
 pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
-    eprintln!("remove_padding called on: {:?}", data);
+    //eprintln!("remove_padding called on: {:?}", data);
     let block_size = data.len();
     let is_full_padding_block = is_full_padding_block(&data, block_size, &padding);
 
@@ -152,7 +152,7 @@ pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
             if let Some(&last_byte) = data.last() {
                 let pad_len = last_byte as usize;
                 if pad_len == 0 || pad_len > block_size || pad_len > data.len() {
-                    eprintln!("PKCS7: Invalid padding length: {}", pad_len);
+                    //eprintln!("PKCS7: Invalid padding length: {}", pad_len);
                     return data;
                 }
                 if data[data.len() - pad_len..].iter().all(|&b| b == last_byte) {
@@ -164,7 +164,7 @@ pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
             if let Some(&last_byte) = data.last() {
                 let pad_len = last_byte as usize;
                 if pad_len == 0 || pad_len > block_size || pad_len > data.len() {
-                    eprintln!("ANSI_X923: Invalid padding length: {}", pad_len);
+                    //eprintln!("ANSI_X923: Invalid padding length: {}", pad_len);
                     return data;
                 }
                 let pad_region = &data[data.len() - pad_len..data.len() - 1];
@@ -177,7 +177,7 @@ pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
             if let Some(&last_byte) = data.last() {
                 let pad_len = last_byte as usize;
                 if pad_len == 0 || pad_len > block_size || pad_len > data.len() {
-                    eprintln!("ISO10126: Invalid padding length: {}", pad_len);
+                    //eprintln!("ISO10126: Invalid padding length: {}", pad_len);
                     return data;
                 }
                 data.truncate(data.len() - pad_len);
