@@ -1,7 +1,7 @@
 use symmetric_cipher::crypto::cipher_traits::{
     CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds,
 };
-use crate::crypto::key_schedule::expand_key; // returns Vec<u64> of length 48
+use crate::crypto::key_schedule::expand_key;
 use crate::crypto::f_function::round_function;
 
 #[derive(Clone)]
@@ -19,54 +19,78 @@ impl Loki97Cipher {
         Loki97Cipher { round_keys: rk }
     }
 
-    /// Encrypt one 64-bit block via 16‐round Feistel.
-    fn feistel_encrypt_block_u64(&self, block: u64) -> u64 {
-        let mut l = (block >> 32) as u32;
-        let mut r = block as u32;
+    /// Encrypt one 128-bit block via 16‐round Feistel.
+    fn feistel_encrypt_block(&self, block: &[u8]) -> Vec<u8> {
+        assert_eq!(block.len(), 16, "Block must be 16 bytes (128 bits)");
+
+        let mut left = block[0..8].to_vec();
+        let mut right = block[8..16].to_vec();
+
         for &sk in &self.round_keys {
-            let f_out = round_function(r as u64, sk) as u32;
-            let new_l = r;
-            let new_r = l ^ f_out;
-            l = new_l;
-            r = new_r;
+            // Convert right half to u64 for the round function
+            let r_u64 = u64::from_be_bytes(right.clone().try_into().unwrap());
+            let f_out = round_function(r_u64, sk);
+
+            // Convert function output back to bytes
+            let f_bytes = f_out.to_be_bytes();
+
+            // XOR left half with function output
+            let new_right: Vec<u8> = left.iter()
+                .zip(f_bytes.iter())
+                .map(|(a, b)| a ^ b)
+                .collect();
+
+            left = right;
+            right = new_right;
         }
-        ((r as u64) << 32) | (l as u64)
+
+        [right, left].concat() // Swap after last round
     }
 
-    /// Decrypt one 64-bit block via 16‐round Feistel.
-    fn feistel_decrypt_block_u64(&self, block: u64) -> u64 {
-        let mut r = (block >> 32) as u32;
-        let mut l = block as u32;
+    /// Decrypt one 128-bit block via 16‐round Feistel.
+    fn feistel_decrypt_block(&self, block: &[u8]) -> Vec<u8> {
+        assert_eq!(block.len(), 16, "Block must be 16 bytes (128 bits)");
+
+        let mut right = block[0..8].to_vec();
+        let mut left = block[8..16].to_vec();
+
         for &sk in self.round_keys.iter().rev() {
-            let f_out = round_function(l as u64, sk) as u32;
-            let new_r = l;
-            let new_l = r ^ f_out;
-            l = new_l;
-            r = new_r;
+            // Convert left half to u64 for the round function
+            let l_u64 = u64::from_be_bytes(left.clone().try_into().unwrap());
+            let f_out = round_function(l_u64, sk);
+
+            // Convert function output back to bytes
+            let f_bytes = f_out.to_be_bytes();
+
+            // XOR right half with function output
+            let new_left: Vec<u8> = right.iter()
+                .zip(f_bytes.iter())
+                .map(|(a, b)| a ^ b)
+                .collect();
+
+            right = left;
+            left = new_left;
         }
-        ((l as u64) << 32) | (r as u64)
+
+        [left, right].concat()
     }
 }
 
 impl CipherAlgorithm for Loki97Cipher {
     fn encrypt(&self, data: &[u8]) -> Vec<u8> {
-        assert_eq!(data.len() % 8, 0, "Data length must be multiple of 8");
-        data.chunks_exact(8)
+        assert_eq!(data.len() % 16, 0, "Data length must be multiple of 16");
+        data.chunks_exact(16)
             .flat_map(|chunk| {
-                let blk = u64::from_be_bytes(chunk.try_into().unwrap());
-                let enc = self.feistel_encrypt_block_u64(blk);
-                enc.to_be_bytes()
+                self.feistel_encrypt_block(chunk)
             })
             .collect()
     }
 
     fn decrypt(&self, data: &[u8]) -> Vec<u8> {
-        assert_eq!(data.len() % 8, 0, "Data length must be multiple of 8");
-        data.chunks_exact(8)
+        assert_eq!(data.len() % 16, 0, "Data length must be multiple of 16");
+        data.chunks_exact(16)
             .flat_map(|chunk| {
-                let blk = u64::from_be_bytes(chunk.try_into().unwrap());
-                let dec = self.feistel_decrypt_block_u64(blk);
-                dec.to_be_bytes()
+                self.feistel_decrypt_block(chunk)
             })
             .collect()
     }
@@ -86,7 +110,7 @@ impl SymmetricCipher for Loki97Cipher {
 
 impl SymmetricCipherWithRounds for Loki97Cipher {
     fn block_size(&self) -> usize {
-        8
+        16 // 128 bits = 16 bytes
     }
 
     fn export_round_keys(&self) -> Option<Vec<u8>> {
@@ -109,16 +133,12 @@ impl SymmetricCipherWithRounds for Loki97Cipher {
     fn encrypt_block(&self, block: &[u8], raw_round_keys: &[u8]) -> Vec<u8> {
         let mut tmp = self.clone();
         tmp.set_key_with_rounds(raw_round_keys);
-        let blk = u64::from_be_bytes(block.try_into().unwrap());
-        let enc = tmp.feistel_encrypt_block_u64(blk);
-        enc.to_be_bytes().to_vec()
+        tmp.feistel_encrypt_block(block)
     }
 
     fn decrypt_block(&self, block: &[u8], raw_round_keys: &[u8]) -> Vec<u8> {
         let mut tmp = self.clone();
         tmp.set_key_with_rounds(raw_round_keys);
-        let blk = u64::from_be_bytes(block.try_into().unwrap());
-        let dec = tmp.feistel_decrypt_block_u64(blk);
-        dec.to_be_bytes().to_vec()
+        tmp.feistel_decrypt_block(block)
     }
 }

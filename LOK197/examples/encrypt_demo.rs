@@ -52,8 +52,10 @@ async fn main() -> std::io::Result<()> {
     let round_keys = expand_key(&key128);
     println!(" First round key: {:016x}", round_keys[0]);
 
+    // 128-bit (16-byte) block для тестирования
     let block = [
         0x32, 0x43, 0xf6, 0xa8, 0x88, 0x5a, 0x30, 0x8d,
+        0x31, 0x31, 0x98, 0xa2, 0xe0, 0x37, 0x07, 0x34,
     ];
 
     let mut cipher = Loki97Cipher::new(&key128);
@@ -106,7 +108,7 @@ async fn main() -> std::io::Result<()> {
                 let iv = if matches!(mode, CipherMode::ECB | CipherMode::RandomDelta) {
                     None
                 } else {
-                    Some(vec![0u8; 8]) // LOK197 uses 8-byte blocks
+                    Some(vec![0u8; 16]) // LOK197 использует 16-байтные блоки (128 бит)
                 };
                 let mut ctx = CipherContext::new(
                     Box::new(Loki97Cipher::new(&key)) as _,
@@ -180,7 +182,7 @@ async fn main() -> std::io::Result<()> {
                 let iv = if matches!(mode, CipherMode::ECB | CipherMode::RandomDelta) {
                     None
                 } else {
-                    Some(vec![0u8; 8])
+                    Some(vec![0u8; 16]) // 16-байтные блоки для 128-битного Loki97
                 };
                 let mut ctx = CipherContext::new(
                     Box::new(Loki97Cipher::new(&key)) as _,

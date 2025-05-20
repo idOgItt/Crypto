@@ -41,16 +41,16 @@ impl KeyExpansion for Loki97Cipher {
         let round_keys_64 = expand_key(master_key);
         round_keys_64
             .into_iter()
-            .map(|key| key.to_le_bytes().to_vec())
+            .map(|key| key.to_be_bytes().to_vec()) // Исправлено на big-endian
             .collect()
     }
 }
 
 impl EncryptionTransformation for Loki97Cipher {
     fn transform(&self, plaintext_block: &[u8], round_key: &[u8]) -> Vec<u8> {
-        let input_value = u64::from_le_bytes(plaintext_block.try_into().expect("block must be 8 bytes"));
-        let round_key_value = u64::from_le_bytes(round_key.try_into().expect("round_key must be 8 bytes"));
+        let input_value = u64::from_be_bytes(plaintext_block.try_into().expect("block must be 8 bytes"));
+        let round_key_value = u64::from_be_bytes(round_key.try_into().expect("round_key must be 8 bytes"));
         let output_value = round_function(input_value, round_key_value);
-        output_value.to_le_bytes().to_vec()
+        output_value.to_be_bytes().to_vec()
     }
 }
