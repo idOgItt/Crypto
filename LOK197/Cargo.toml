@@ -1,0 +1,9 @@
+[package]
+name = "LOK197"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+symmetric_cipher = { path = "../symmetric_cipher" }
+tokio = "1.45.0"
+rand = "0.9.1"

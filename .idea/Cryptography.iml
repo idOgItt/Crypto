@@ -16,6 +16,11 @@
       <sourceFolder url="file://$MODULE_DIR$/symmetric_cipher/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/symmetric_cipher/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/symmetric_cipher/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/LOK197/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Twofish/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/LOK197/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/LOK197/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/LOK197/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/hello_cargo/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/symmetric_cipher/target" />

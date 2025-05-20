@@ -8,5 +8,5 @@ edition = "2024"
 [workspace]
 members = [
     "symmetric_cipher",
-    "rsa", "aes",
+    "rsa", "aes", "LOK197", "Twofish",
 ]

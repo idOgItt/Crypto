@@ -1,0 +1,47 @@
+use LOK197::crypto::key_schedule::expand_key;
+
+#[test]
+fn test_expand_key_128bit() {
+    let key = [0u8; 16];
+    let rk = expand_key(&key);
+    assert_eq!(rk.len(), 48);
+    assert!(rk.iter().any(|&x| x != 0));
+}
+
+#[test]
+fn test_expand_key_192bit() {
+    let key = [
+        0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+        0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
+        0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,
+    ];
+    let rk = expand_key(&key);
+    assert_eq!(rk.len(), 48);
+}
+
+#[test]
+fn test_expand_key_256bit() {
+    let key = [
+        0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+        0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
+        0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,
+        0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,
+    ];
+    let rk = expand_key(&key);
+    assert_eq!(rk.len(), 48);
+}
+
+#[test]
+#[should_panic]
+fn test_expand_key_invalid_size() {
+    let key = [0u8; 33];
+    let _ = expand_key(&key);
+}
+
+#[test]
+fn test_expand_key_deterministic() {
+    let key = [0xAB; 32];
+    let a = expand_key(&key);
+    let b = expand_key(&key);
+    assert_eq!(a, b);
+}

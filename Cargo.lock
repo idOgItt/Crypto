@@ -7,6 +7,19 @@ name = "Cryptography"
 version = "0.1.0"
 
 [[package]]
+name = "LOK197"
+version = "0.1.0"
+dependencies = [
+ "rand 0.9.1",
+ "symmetric_cipher",
+ "tokio",
+]
+
+[[package]]
+name = "Twofish"
+version = "0.1.0"
+
+[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
