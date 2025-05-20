@@ -1,16 +1,15 @@
 // examples/demo_lok197.rs
 
 use std::fs;
-use std::path::Path;
 use tokio;
 
-use rand::{RngCore, rngs::StdRng};
 use rand::SeedableRng;
+use rand::{rngs::StdRng, RngCore};
 
+use LOK197::crypto::f_function::round_function;
+use LOK197::crypto::key_schedule::expand_key;
 use LOK197::crypto::loki97::Loki97Cipher;
 use LOK197::crypto::sboxes::{s1, s2};
-use LOK197::crypto::key_schedule::expand_key;
-use LOK197::crypto::f_function::round_function;
 
 use symmetric_cipher::crypto::cipher_context::CipherContext;
 use symmetric_cipher::crypto::cipher_traits::{
