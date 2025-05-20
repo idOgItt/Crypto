@@ -65,10 +65,11 @@ mod tests {
     fn test_pht_multiple_examples() {
         // Несколько дополнительных примеров
         let test_cases = [
-            (0x01234567, 0x89ABCDEF, 0x8ACF1356, 0x13AF9F45),
+            // (input_a,    input_b,    expected_a, expected_b)
+            (0x01234567, 0x89ABCDEF, 0x8ACF1356, 0x147AE145),
             (0x00000000, 0x00000001, 0x00000001, 0x00000002),
             (0xAAAAAAAA, 0x55555555, 0xFFFFFFFF, 0x55555554),
-            (0x12345678, 0x12345678, 0x2468ACF0, 0x3702ACEE)
+            (0x12345678, 0x12345678, 0x2468ACF0, 0x369D0368),
         ];
 
         for (input_a, input_b, expected_a, expected_b) in test_cases {

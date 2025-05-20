@@ -56,51 +56,36 @@ mod tests {
     }
 
     #[test]
-    fn test_mds_specific_vectors() {
-        // Из документации Twofish или известных тестовых векторов
-        let test_cases = [
-            (0x00000000, 0x00000000),
-            (0x01010101, 0xBDBDBDBD),
-            (0xFFFFFFFF, 0x7C957C96)
+    fn test_mds_single_byte() {
+        let cases = [
+            (0x01000000, 0x015B_EFEF),
+            (0x00010000, 0xEFEF_5B01),
+            (0x00000100, 0x5BEF_01EF),
+            (0x00000001, 0x5B01_EF5B),
         ];
-
-        for (input, expected) in test_cases {
-            let result = mds_multiply(input);
+        for (input, expected) in cases {
             assert_eq!(
-                result, expected,
-                "MDS умножение для 0x{:08X}: ожидалось 0x{:08X}, получено 0x{:08X}",
-                input, expected, result
+                mds_multiply(input), expected,
+                "Для 0x{:08X}: ожидалось 0x{:08X}, получено 0x{:08X}",
+                input, expected, mds_multiply(input)
             );
         }
     }
 
     #[test]
-    fn test_mds_single_byte() {
-        // Тестирование обработки отдельных байтов
-
-        // Только старший байт
-        let input = 0x01000000;
-        let result = mds_multiply(input);
-        let expected = 0x01EF5BEF;
-        assert_eq!(result, expected);
-
-        // Только второй байт
-        let input = 0x00010000;
-        let result = mds_multiply(input);
-        let expected = 0xEFEF5B01;
-        assert_eq!(result, expected);
-
-        // Только третий байт
-        let input = 0x00000100;
-        let result = mds_multiply(input);
-        let expected = 0x5BEF01EF;
-        assert_eq!(result, expected);
-
-        // Только младший байт
-        let input = 0x00000001;
-        let result = mds_multiply(input);
-        let expected = 0x5B01EF5B;
-        assert_eq!(result, expected);
+    fn test_mds_specific_vectors() {
+        let cases = [
+            (0x00000000, 0x0000_0000),
+            (0x01010101, 0xEE5A_5A5A),
+            (0xFFFFFFFF, 0x1AD1_D1D1),
+        ];
+        for (input, expected) in cases {
+            assert_eq!(
+                mds_multiply(input), expected,
+                "Для 0x{:08X}: ожидалось 0x{:08X}, получено 0x{:08X}",
+                input, expected, mds_multiply(input)
+            );
+        }
     }
 
     #[test]
