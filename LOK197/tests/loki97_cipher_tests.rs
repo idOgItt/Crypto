@@ -1,5 +1,3 @@
-// tests/loki97_cipher_tests.rs
-
 use LOK197::crypto::loki97::Loki97Cipher;
 use symmetric_cipher::crypto::cipher_traits::{
     CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds,
@@ -8,7 +6,7 @@ use symmetric_cipher::crypto::cipher_traits::{
 #[test]
 fn test_block_size_is_correct() {
     let cipher = Loki97Cipher::new(&[0u8; 16]);
-    assert_eq!(cipher.block_size(), 8);
+    assert_eq!(cipher.block_size(), 16); // Теперь 16 байт (128 бит)
 }
 
 #[test]
@@ -35,7 +33,8 @@ fn test_encrypt_decrypt_block_round_keys() {
     let cipher = Loki97Cipher::new(&[0u8; 32]);
     let rk = cipher.export_round_keys().unwrap();
 
-    let plaintext = [0,1,2,3,4,5,6,7];
+    // 16-байтный блок (128 бит)
+    let plaintext = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
     let ciphertext = cipher.encrypt_block(&plaintext, &rk);
     let decrypted  = cipher.decrypt_block(&ciphertext, &rk);
 
@@ -45,7 +44,8 @@ fn test_encrypt_decrypt_block_round_keys() {
 #[test]
 fn test_encrypt_decrypt_full_data() {
     let cipher = Loki97Cipher::new(&[0x10u8; 32]);
-    let plaintext = vec![0xAAu8; 16];
+    // 32 байта (2 блока по 16 байт)
+    let plaintext = vec![0xAAu8; 32];
     let ciphertext = cipher.encrypt(&plaintext);
     let decrypted  = cipher.decrypt(&ciphertext);
 
@@ -56,7 +56,8 @@ fn test_encrypt_decrypt_full_data() {
 fn test_different_keys_produce_different_ciphertexts() {
     let c1 = Loki97Cipher::new(&[0u8; 32]);
     let c2 = Loki97Cipher::new(&[1u8; 32]);
-    let plaintext = [1u8; 8];
+    // 16-байтный блок (128 бит)
+    let plaintext = [1u8; 16];
 
     let ct1 = c1.encrypt_block(&plaintext, &c1.export_round_keys().unwrap());
     let ct2 = c2.encrypt_block(&plaintext, &c2.export_round_keys().unwrap());
