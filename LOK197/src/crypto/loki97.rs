@@ -1,5 +1,3 @@
-// src/crypto/loki97.rs
-
 use symmetric_cipher::crypto::cipher_traits::{
     CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds,
 };
