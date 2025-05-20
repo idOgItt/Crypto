@@ -3,5 +3,9 @@ name = "Twofish"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "twofish"
+path = "src/lib.rs"
+
 [dependencies]
 symmetric_cipher = { path = "../symmetric_cipher" }

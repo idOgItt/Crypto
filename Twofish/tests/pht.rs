@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use Twofish::crypto::pht::pht;
+    use twofish::crypto::pht::pht;
     use super::*;
 
     #[test]

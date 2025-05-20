@@ -1,5 +1,6 @@
-pub mod crypto;
 pub use symmetric_cipher::crypto as symmetric_crypto;
+pub mod crypto;
+pub use crate::crypto::twofish::Twofish as TwofishCipher;
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }

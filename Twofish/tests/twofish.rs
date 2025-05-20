@@ -1,5 +1,7 @@
 #[cfg(test)]
 mod tests {
+    use symmetric_cipher::crypto::cipher_traits::{CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds};
+    use twofish::crypto::twofish::Twofish;
     use super::*;
 
     // Вспомогательная функция для создания 16-байтного блока из u128

@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod integration_tests {
     use symmetric_cipher::crypto::cipher_traits::CipherAlgorithm;
-    use Twofish::crypto::twofish::*;
-    use crate::crypto::cipher_traits::CipherAlgorithm;
-
+    use twofish::TwofishCipher;
     const TEST_KEY_128: [u8; 16] = [
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
         0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
@@ -68,7 +66,7 @@ mod integration_tests {
         ];
 
         for (i, test) in test_vectors.iter().enumerate() {
-            let cipher = Twofish::new(test.key);
+            let cipher = TwofishCipher::new(test.key);
 
             let encrypted = cipher.encrypt(test.plaintext);
             assert_eq!(
@@ -87,7 +85,7 @@ mod integration_tests {
     #[test]
     fn test_multiple_blocks() {
         // Проверка шифрования/дешифрования нескольких блоков данных
-        let cipher = Twofish::new(&TEST_KEY_128);
+        let cipher = TwofishCipher::new(&TEST_KEY_128);
 
         // Данные длиной в несколько блоков
         let plaintext = [
@@ -109,7 +107,7 @@ mod integration_tests {
     #[test]
     fn test_padding() {
         // Проверка, что данные, не кратные блоку, корректно обрабатываются
-        let cipher = Twofish::new(&TEST_KEY_128);
+        let cipher = TwofishCipher::new(&TEST_KEY_128);
 
         // Данные не кратны размеру блока (16 байт)
         let plaintext = [
@@ -143,7 +141,7 @@ mod integration_tests {
     #[test]
     fn test_empty_data() {
         // Проверка обработки пустых данных
-        let cipher = Twofish::new(&TEST_KEY_128);
+        let cipher = TwofishCipher::new(&TEST_KEY_128);
 
         let empty_data: [u8; 0] = [];
 

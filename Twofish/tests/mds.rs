@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use Twofish::crypto::gf256::gf_mul;
-    use Twofish::crypto::mds::mds_multiply;
+    use twofish::crypto::gf256::gf_mul;
+    use twofish::crypto::mds::mds_multiply;
     use super::*;
     
 
@@ -99,7 +99,7 @@ mod tests {
         // Только младший байт
         let input = 0x00000001;
         let result = mds_multiply(input);
-        let expected = 0x5B010EF5B;
+        let expected = 0x5B01EF5B;
         assert_eq!(result, expected);
     }
 

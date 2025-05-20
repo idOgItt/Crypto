@@ -1,4 +1,4 @@
-use Twofish::crypto::utils::{rotate_left, rotate_right};
+use twofish::crypto::utils::{rotate_left, rotate_right};
 
 #[cfg(test)]
 mod tests {

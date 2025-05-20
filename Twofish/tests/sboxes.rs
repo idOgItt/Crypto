@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use Twofish::crypto::sboxes::{q0, q1, Q0, Q1};
+    use twofish::crypto::sboxes::{q0, q1, Q0, Q1};
     use super::*;
 
     #[test]

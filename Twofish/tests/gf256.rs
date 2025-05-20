@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use Twofish::crypto::gf256::{gf_mul, gf_pow};
+    use twofish::crypto::gf256::{gf_mul, gf_pow};
     use super::*;
 
     #[test]

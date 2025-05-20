@@ -1,10 +1,15 @@
 #[cfg(test)]
 mod tests {
+    use twofish::TwofishCipher;
+    use twofish::crypto::key_schedule::expand_key;
+    use twofish::crypto::twofish::Twofish;
+
+
     use symmetric_cipher::crypto::encryption_transformation::EncryptionTransformation;
     use symmetric_cipher::crypto::key_expansion::KeyExpansion;
-    use Twofish::crypto::key_schedule::expand_key;
+    
     use super::*;
-    use Twofish::crypto::twofish::Twofish;
+    
 
     // Вспомогательная функция для проверки структуры подключей
     fn check_round_keys_structure(round_keys: &[Vec<u8>]) {
@@ -105,8 +110,13 @@ mod tests {
         // Проверка первого подключа (если есть известное значение)
         assert_eq!(
             expanded_keys[0],
-            0x52B75E015BFFD280,
-            "Первый расширенный подключ не соответствует ожидаемому"
+            0x52B75E01,  // First 32 bits of expected value
+            "Первый подключ не соответствует ожидаемому"
+        );
+        assert_eq!(
+            expanded_keys[1],
+            0x5BFFD280,  // Second 32 bits of expected value
+            "Второй подключ не соответствует ожидаемому"
         );
     }
 
