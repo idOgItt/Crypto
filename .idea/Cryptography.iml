@@ -21,6 +21,9 @@
       <sourceFolder url="file://$MODULE_DIR$/LOK197/benches" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/LOK197/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/LOK197/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Twofish/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Twofish/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Twofish/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/hello_cargo/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/symmetric_cipher/target" />

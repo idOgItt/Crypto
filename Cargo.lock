@@ -18,6 +18,11 @@ dependencies = [
 [[package]]
 name = "Twofish"
 version = "0.1.0"
+dependencies = [
+ "rand 0.9.1",
+ "symmetric_cipher",
+ "tokio",
+]
 
 [[package]]
 name = "addr2line"

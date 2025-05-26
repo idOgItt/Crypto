@@ -17,3 +17,6 @@ target/
 #.idea/
 symmetric_cipher/examples/files
 .idea
+Twofish/examples/output
+LOK197/examples/output
+.idea/*
