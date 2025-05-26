@@ -9,3 +9,5 @@ path = "src/lib.rs"
 
 [dependencies]
 symmetric_cipher = { path = "../symmetric_cipher" }
+tokio = "1.45.0"
+rand = "0.9.1"
