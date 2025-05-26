@@ -60,7 +60,6 @@ impl CipherContext {
         Ok(())
     }
 
-
     #[inline]
     fn increment_block(block: &mut [u8], value: usize) {
         let mut carry = value;
@@ -74,7 +73,6 @@ impl CipherContext {
         }
     }
 
-
     #[inline]
     fn is_stream_mode(&self) -> bool {
         matches!(
@@ -83,15 +81,14 @@ impl CipherContext {
         )
     }
 
-
-
     #[inline]
     fn is_empty_input_test_pattern(&self, data: &[u8]) -> bool {
-
-        if !matches!(self.mode, CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta) {
+        if !matches!(
+            self.mode,
+            CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta
+        ) {
             return false;
         }
-
 
         if matches!(self.padding, PaddingMode::Zeros) {
             return false;
@@ -99,51 +96,41 @@ impl CipherContext {
 
         let block_size = self.algorithm.block_size();
 
-
-
         if block_size == 8 && (data.len() == block_size || data.len() == 2 * block_size) {
             match self.padding {
                 PaddingMode::PKCS7 => {
-
-
                     if data.len() == block_size && data.iter().all(|&b| b == 8) {
                         return true;
                     }
-                    if data.len() == 2 * block_size &&
-                        data[..block_size].iter().all(|&b| b == 8) &&
-                        data[block_size..].iter().all(|&b| b == 0) {
+                    if data.len() == 2 * block_size
+                        && data[..block_size].iter().all(|&b| b == 8)
+                        && data[block_size..].iter().all(|&b| b == 0)
+                    {
                         return true;
                     }
                 }
                 PaddingMode::ANSI_X923 => {
-
-
-                    if data.len() == block_size &&
-                        data[..block_size-1].iter().all(|&b| b == 0) &&
-                        data[block_size-1] == 8 {
+                    if data.len() == block_size
+                        && data[..block_size - 1].iter().all(|&b| b == 0)
+                        && data[block_size - 1] == 8
+                    {
                         return true;
                     }
-                    if data.len() == 2 * block_size &&
-                        data[..block_size-1].iter().all(|&b| b == 0) &&
-                        data[block_size-1] == 8 &&
-                        data[block_size..].iter().all(|&b| b == 0) {
+                    if data.len() == 2 * block_size
+                        && data[..block_size - 1].iter().all(|&b| b == 0)
+                        && data[block_size - 1] == 8
+                        && data[block_size..].iter().all(|&b| b == 0)
+                    {
                         return true;
                     }
                 }
                 PaddingMode::ISO10126 => {
-
-
-
-
-
-
-
-                    if data.len() == 2 * block_size &&
-                        data[block_size - 1] == 8 &&
-                        data[data.len() - 1] == 0 {
+                    if data.len() == 2 * block_size
+                        && data[block_size - 1] == 8
+                        && data[data.len() - 1] == 0
+                    {
                         return true;
                     }
-
 
                     if data.len() == block_size && data[block_size - 1] == 8 {
                         return true;
@@ -156,19 +143,16 @@ impl CipherContext {
         false
     }
 
-
     fn process_ctr_batch(&self, data: &[u8], counter_start: &[u8], start_idx: usize) -> Vec<u8> {
         let block_size = self.algorithm.block_size();
         let round_key = &self.additional_params;
         let mut result = Vec::with_capacity(data.len());
-
 
         for (i, chunk) in data.chunks(block_size).enumerate() {
             let mut counter = counter_start.to_vec();
             Self::increment_block(&mut counter, start_idx + i);
 
             let keystream = self.algorithm.encrypt_block(&counter, round_key);
-
 
             for (j, &b) in chunk.iter().enumerate() {
                 result.push(keystream[j] ^ b);
@@ -178,37 +162,30 @@ impl CipherContext {
         result
     }
 
-
     fn process_ecb_parallel(&self, data: &[u8], encrypt: bool) -> Vec<u8> {
         let block_size = self.algorithm.block_size();
         let round_key = &self.additional_params;
 
-
         let optimal_chunk_size = if data.len() > OPTIMAL_PARALLELISM_THRESHOLD {
-
-            (data.len() / rayon::current_num_threads()).max(block_size)
+            (data.len() / rayon::current_num_threads())
+                .max(block_size)
                 .min(CHUNK_SIZE)
-
                 / block_size
                 * block_size
         } else {
             block_size
         };
 
-
         data.par_chunks(optimal_chunk_size)
             .flat_map(|mega_chunk| {
                 let mut result = Vec::with_capacity(mega_chunk.len());
 
-
                 for chunk in mega_chunk.chunks(block_size) {
                     let mut block = chunk.to_vec();
-
 
                     if block.len() < block_size {
                         block.resize(block_size, 0);
                     }
-
 
                     let processed = if encrypt {
                         self.algorithm.encrypt_block(&block, round_key)
@@ -224,72 +201,55 @@ impl CipherContext {
             .collect()
     }
 
-
     fn process_ctr_parallel(&self, data: &[u8], iv: &[u8]) -> Vec<u8> {
         let block_size = self.algorithm.block_size();
 
-
         let optimal_chunk_size = if data.len() > OPTIMAL_PARALLELISM_THRESHOLD {
-
             (data.len() / rayon::current_num_threads())
                 .max(block_size)
                 .min(CHUNK_SIZE)
         } else {
-
             block_size * 64
         };
-
 
         data.par_chunks(optimal_chunk_size)
             .enumerate()
             .flat_map(|(chunk_idx, chunk)| {
-
                 let counter_offset = chunk_idx * (optimal_chunk_size / block_size);
-
 
                 self.process_ctr_batch(chunk, iv, counter_offset)
             })
             .collect()
     }
 
-
     fn process_ecb_data(&self, data: &[u8], encrypt: bool) -> Vec<u8> {
         let block_size = self.algorithm.block_size();
 
         if encrypt {
-
             let padded_data = if data.len() % block_size == 0 && !data.is_empty() {
-
                 if matches!(
                     self.padding,
                     PaddingMode::PKCS7 | PaddingMode::ANSI_X923 | PaddingMode::ISO10126
                 ) {
-
                     apply_padding(data.to_vec(), block_size, self.padding.clone())
                 } else {
-
                     data.to_vec()
                 }
             } else {
-
                 apply_padding(data.to_vec(), block_size, self.padding.clone())
             };
 
-
             self.process_ecb_parallel(&padded_data, true)
         } else {
-
             let processed = self.process_ecb_parallel(data, false);
 
             if processed.is_empty() {
                 return processed;
             }
 
-
             if self.is_empty_input_test_pattern(&processed) {
                 return Vec::new();
             }
-
 
             let last_block_idx = processed.len() - block_size;
             let (prefix, last_block) = processed.split_at(last_block_idx);
@@ -301,7 +261,6 @@ impl CipherContext {
             result
         }
     }
-
 
     fn process_chunked_parallel<R: Read, W: Write>(
         &self,
@@ -347,7 +306,6 @@ impl CipherContext {
                 }
             }
 
-
             if encrypt {
                 let padded = apply_padding(
                     prev_block.unwrap_or_else(Vec::new),
@@ -366,7 +324,6 @@ impl CipherContext {
             return writer.flush();
         }
 
-
         let mut chunk_buffer = vec![0u8; CHUNK_SIZE];
         let counter_base = self.iv.clone().unwrap_or_else(|| vec![0u8; block_size]);
         let mut counter_offset = 0;
@@ -384,8 +341,12 @@ impl CipherContext {
             let data_slice = &chunk_buffer[..n];
             let is_last_chunk = n < CHUNK_SIZE;
 
-
-            if !encrypt && matches!(self.mode, CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta) {
+            if !encrypt
+                && matches!(
+                    self.mode,
+                    CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta
+                )
+            {
                 all_data.extend_from_slice(data_slice);
             }
 
@@ -422,10 +383,13 @@ impl CipherContext {
             is_first_chunk = false;
         }
 
-
-        if !encrypt && is_first_chunk &&
-            matches!(self.mode, CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta) {
-
+        if !encrypt
+            && is_first_chunk
+            && matches!(
+                self.mode,
+                CipherMode::CBC | CipherMode::PCBC | CipherMode::RandomDelta
+            )
+        {
             if self.is_empty_input_test_pattern(&all_data) {
                 return writer.flush();
             }
@@ -451,28 +415,27 @@ impl CipherContext {
             let processed_last =
                 self.process_single_block(&last_block, &mut prev_block, false, false)?;
 
-
             if self.is_empty_input_test_pattern(&processed_last) {
                 return writer.flush();
             }
 
-
             let unpadded = match self.padding {
                 PaddingMode::Zeros => {
-
                     let mut result = processed_last.clone();
                     while result.len() > 0 && result[result.len() - 1] == 0 {
                         result.pop();
                     }
 
-                    if result.is_empty() && processed_last.len() > 0 &&
-                        (last_block.len() == 1 || (last_block.len() > 1 && last_block[0] == 0)) {
+                    if result.is_empty()
+                        && processed_last.len() > 0
+                        && (last_block.len() == 1 || (last_block.len() > 1 && last_block[0] == 0))
+                    {
                         vec![0]
                     } else {
                         result
                     }
                 }
-                _ => remove_padding(processed_last, self.padding.clone())
+                _ => remove_padding(processed_last, self.padding.clone()),
             };
 
             if !unpadded.is_empty() {
@@ -488,7 +451,6 @@ impl CipherContext {
         writer.flush()
     }
 
-
     fn process_single_block(
         &self,
         block_data: &[u8],
@@ -500,15 +462,12 @@ impl CipherContext {
         let round_key = &self.additional_params;
         let is_stream_mode = self.is_stream_mode();
 
-
         let mut block = block_data.to_vec();
 
-
         if apply_padding_if_needed && !is_stream_mode {
-
             if block.len() < block_size
                 || (block.len() == block_size
-                && matches!(
+                    && matches!(
                         self.padding,
                         PaddingMode::PKCS7 | PaddingMode::ANSI_X923 | PaddingMode::ISO10126
                     ))
@@ -516,16 +475,12 @@ impl CipherContext {
                 block = apply_padding(block, block_size, self.padding.clone());
             }
         } else if !is_stream_mode && block.len() < block_size {
-
             block.resize(block_size, 0);
         }
-
-
 
         let result = match self.mode {
             CipherMode::CBC => {
                 if encrypt {
-
                     for (i, &p) in prev.iter().enumerate() {
                         if i < block.len() {
                             block[i] ^= p;
@@ -534,15 +489,12 @@ impl CipherContext {
 
                     let encrypted = self.algorithm.encrypt_block(&block, round_key);
 
-
                     prev.clear();
                     prev.extend_from_slice(&encrypted);
 
                     encrypted
                 } else {
-
                     let decrypted = self.algorithm.decrypt_block(&block, round_key);
-
 
                     let mut result = decrypted.clone();
                     for (i, &p) in prev.iter().enumerate() {
@@ -550,7 +502,6 @@ impl CipherContext {
                             result[i] ^= p;
                         }
                     }
-
 
                     prev.clear();
                     prev.extend_from_slice(&block);
@@ -560,9 +511,7 @@ impl CipherContext {
             }
             CipherMode::CFB => {
                 if encrypt {
-
                     let keystream = self.algorithm.encrypt_block(prev, round_key);
-
 
                     let mut result = Vec::with_capacity(block.len());
                     for i in 0..block.len() {
@@ -572,7 +521,6 @@ impl CipherContext {
                             result.push(block[i]);
                         }
                     }
-
 
                     prev.clear();
                     prev.extend_from_slice(&result[..block.len().min(block_size)]);
@@ -582,9 +530,7 @@ impl CipherContext {
 
                     result
                 } else {
-
                     let keystream = self.algorithm.encrypt_block(prev, round_key);
-
 
                     let mut result = Vec::with_capacity(block.len());
                     for i in 0..block.len() {
@@ -594,7 +540,6 @@ impl CipherContext {
                             result.push(block[i]);
                         }
                     }
-
 
                     prev.clear();
                     prev.extend_from_slice(&block[..block.len().min(block_size)]);
@@ -606,9 +551,7 @@ impl CipherContext {
                 }
             }
             CipherMode::OFB => {
-
                 let keystream = self.algorithm.encrypt_block(prev, round_key);
-
 
                 let mut result = Vec::with_capacity(block.len());
                 for i in 0..block.len() {
@@ -619,30 +562,25 @@ impl CipherContext {
                     }
                 }
 
-
                 prev.clear();
                 prev.extend_from_slice(&keystream[..block_size]);
 
                 result
             }
             CipherMode::PCBC => {
-
                 let mut sized_block = block.clone();
                 if !is_stream_mode && sized_block.len() < block_size {
                     sized_block.resize(block_size, 0);
                 }
 
                 if encrypt {
-
                     let mut temp_block = sized_block.clone();
-
 
                     for i in 0..block_size.min(temp_block.len()) {
                         if i < prev.len() {
                             temp_block[i] ^= prev[i];
                         }
                     }
-
 
                     let actual_block_len = if is_stream_mode {
                         block.len()
@@ -659,7 +597,6 @@ impl CipherContext {
 
                     let encrypted = self.algorithm.encrypt_block(&block_to_encrypt, round_key);
 
-
                     let mut new_prev = vec![0u8; block_size];
                     for i in 0..block_size {
                         if i < block.len() {
@@ -672,14 +609,12 @@ impl CipherContext {
 
                     *prev = new_prev;
 
-
                     if is_stream_mode && encrypted.len() > actual_block_len {
                         encrypted[..actual_block_len].to_vec()
                     } else {
                         encrypted
                     }
                 } else {
-
                     let block_to_decrypt = if sized_block.len() < block_size && !is_stream_mode {
                         let mut padded = sized_block.clone();
                         padded.resize(block_size, 0);
@@ -690,14 +625,12 @@ impl CipherContext {
 
                     let decrypted = self.algorithm.decrypt_block(&block_to_decrypt, round_key);
 
-
                     let mut result = decrypted.clone();
                     for i in 0..result.len() {
                         if i < prev.len() {
                             result[i] ^= prev[i];
                         }
                     }
-
 
                     let mut new_prev = vec![0u8; block_size];
                     for i in 0..block_size {
@@ -711,7 +644,6 @@ impl CipherContext {
 
                     *prev = new_prev;
 
-
                     if is_stream_mode && result.len() > block.len() {
                         result[..block.len()].to_vec()
                     } else {
@@ -720,9 +652,7 @@ impl CipherContext {
                 }
             }
             CipherMode::RandomDelta => {
-
                 let delta = &self.additional_params;
-
 
                 let block_to_process = if block.len() < block_size && !is_stream_mode {
                     let mut sized = block.clone();
@@ -733,7 +663,6 @@ impl CipherContext {
                 };
 
                 if encrypt {
-
                     let mut temp_block = block_to_process.clone();
                     for (i, &p) in prev.iter().enumerate() {
                         if i < temp_block.len() {
@@ -743,7 +672,6 @@ impl CipherContext {
 
                     let encrypted = self.algorithm.encrypt_block(&temp_block, round_key);
 
-
                     let new_prev: Vec<u8> = prev
                         .iter()
                         .zip(delta.iter().chain(std::iter::repeat(&0)))
@@ -753,16 +681,13 @@ impl CipherContext {
 
                     *prev = new_prev;
 
-
                     if is_stream_mode && encrypted.len() > block.len() {
                         encrypted[..block.len()].to_vec()
                     } else {
                         encrypted
                     }
                 } else {
-
                     let decrypted = self.algorithm.decrypt_block(&block_to_process, round_key);
-
 
                     let mut result = decrypted.clone();
                     for (i, &p) in prev.iter().enumerate() {
@@ -771,7 +696,6 @@ impl CipherContext {
                         }
                     }
 
-
                     let new_prev: Vec<u8> = prev
                         .iter()
                         .zip(delta.iter().chain(std::iter::repeat(&0)))
@@ -780,7 +704,6 @@ impl CipherContext {
                         .collect();
 
                     *prev = new_prev;
-
 
                     if is_stream_mode && result.len() > block.len() {
                         result[..block.len()].to_vec()
@@ -796,16 +719,16 @@ impl CipherContext {
         Ok(result)
     }
 
-
     pub fn is_all_padding(data: &[u8], padding: &PaddingMode) -> bool {
         match padding {
             PaddingMode::PKCS7 => {
                 if let Some(&last_byte) = data.last() {
                     let pad_len = last_byte as usize;
 
-                    if pad_len > 0 && pad_len <= data.len() &&
-                        data.len() % pad_len == 0 &&
-                        data.iter().all(|&b| b == last_byte)
+                    if pad_len > 0
+                        && pad_len <= data.len()
+                        && data.len() % pad_len == 0
+                        && data.iter().all(|&b| b == last_byte)
                     {
                         return true;
                     }
@@ -815,8 +738,6 @@ impl CipherContext {
                 if let Some(&last_byte) = data.last() {
                     let pad_len = last_byte as usize;
                     if pad_len > 0 && pad_len <= data.len() && data.len() % pad_len == 0 {
-
-
                         let blocks = data.len() / pad_len;
                         for i in 0..blocks {
                             let block_start = i * pad_len;
@@ -835,7 +756,6 @@ impl CipherContext {
                 if let Some(&last_byte) = data.last() {
                     let pad_len = last_byte as usize;
                     if pad_len > 0 && pad_len <= data.len() && data.len() % pad_len == 0 {
-
                         let blocks = data.len() / pad_len;
                         for i in 0..blocks {
                             let block_end = (i + 1) * pad_len;
@@ -852,16 +772,13 @@ impl CipherContext {
         false
     }
 
-
     async fn process_data(&self, data: &[u8], encrypt: bool) -> std::io::Result<Vec<u8>> {
         let block_size = self.algorithm.block_size();
         let is_stream_mode = self.is_stream_mode();
 
-
         if !encrypt && self.is_empty_input_test_pattern(data) {
             return Ok(Vec::new());
         }
-
 
         if data.is_empty() {
             return if encrypt && !is_stream_mode {
@@ -878,34 +795,25 @@ impl CipherContext {
                 }
             } else {
                 Ok(Vec::new())
-            }
+            };
         }
 
-
         match self.mode {
-            CipherMode::ECB => {
-
-                Ok(self.process_ecb_data(data, encrypt))
-            }
+            CipherMode::ECB => Ok(self.process_ecb_data(data, encrypt)),
             CipherMode::CTR => {
-
                 let default_iv = vec![0u8; block_size];
                 let iv = self.iv.as_deref().unwrap_or(&default_iv);
                 let parallel_result = self.process_ctr_parallel(data, iv);
                 Ok(parallel_result)
             }
             _ => {
-
                 let prepared_data = if encrypt && !is_stream_mode {
-
                     apply_padding(data.to_vec(), block_size, self.padding.clone())
                 } else {
                     data.to_vec()
                 };
 
-
                 let result = if prepared_data.len() > OPTIMAL_PARALLELISM_THRESHOLD {
-
                     let mut output = Vec::with_capacity(prepared_data.len());
                     {
                         let cursor = std::io::Cursor::new(&prepared_data);
@@ -914,16 +822,12 @@ impl CipherContext {
                     }
                     output
                 } else {
-
                     let mut prev = self.iv.clone().unwrap_or_else(|| vec![0u8; block_size]);
                     let mut result = Vec::with_capacity(prepared_data.len());
 
-
                     let blocks: Vec<_> = if is_stream_mode {
-
                         prepared_data.chunks(block_size).collect()
                     } else {
-
                         prepared_data.chunks(block_size).collect()
                     };
 
@@ -939,14 +843,11 @@ impl CipherContext {
                         result.extend_from_slice(&processed);
                     }
 
-
                     if !encrypt && self.is_empty_input_test_pattern(&result) {
                         return Ok(Vec::new());
                     }
 
-
                     if !encrypt && !is_stream_mode && !result.is_empty() {
-
                         if Self::is_all_padding(&result, &self.padding) {
                             return Ok(Vec::new());
                         }
@@ -963,15 +864,13 @@ impl CipherContext {
                             final_result.extend_from_slice(&result[..last_block_start]);
                         }
 
-
                         let last_block = match self.padding {
                             PaddingMode::Zeros => {
-                                if result.len() == block_size &&
-                                    (data.len() == 1 || (data.len() > 1 && data[0] == 0)) {
-
+                                if result.len() == block_size
+                                    && (data.len() == 1 || (data.len() > 1 && data[0] == 0))
+                                {
                                     vec![0]
                                 } else {
-
                                     let mut block = result[last_block_start..].to_vec();
                                     while block.len() > 0 && block[block.len() - 1] == 0 {
                                         block.pop();
@@ -984,7 +883,10 @@ impl CipherContext {
                                     }
                                 }
                             }
-                            _ => remove_padding(result[last_block_start..].to_vec(), self.padding.clone())
+                            _ => remove_padding(
+                                result[last_block_start..].to_vec(),
+                                self.padding.clone(),
+                            ),
                         };
 
                         final_result.extend_from_slice(&last_block);
@@ -1000,7 +902,6 @@ impl CipherContext {
         }
     }
 
-
     fn run_file_task<F, T>(task: F) -> std::io::Result<T>
     where
         F: FnOnce() -> std::io::Result<T> + Send + 'static,
@@ -1009,9 +910,8 @@ impl CipherContext {
         tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(tokio::task::spawn_blocking(task))
         })
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
     }
-
 
     pub async fn encrypt(
         &self,
@@ -1051,7 +951,6 @@ impl CipherContext {
         }
     }
 
-
     pub async fn decrypt(
         &self,
         input: CipherInput,
@@ -1059,20 +958,16 @@ impl CipherContext {
     ) -> std::io::Result<()> {
         match (input, output) {
             (CipherInput::Bytes(data), out) => {
-
                 if self.is_empty_input_test_pattern(&data) {
                     return write_all(out, &Vec::new());
                 }
 
-
-                if matches!(self.mode, CipherMode::CBC) &&
-                    matches!(self.padding, PaddingMode::Zeros) &&
-                    data.len() == self.algorithm.block_size() {
-
+                if matches!(self.mode, CipherMode::CBC)
+                    && matches!(self.padding, PaddingMode::Zeros)
+                    && data.len() == self.algorithm.block_size()
+                {
                     let mut decrypted = self.process_data(&data, false).await?;
                     if decrypted.is_empty() && data.len() > 0 {
-
-
                         decrypted = vec![0];
                     }
                     return write_all(out, &decrypted);
