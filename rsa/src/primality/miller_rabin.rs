@@ -4,7 +4,6 @@ use num_bigint::{BigUint, RandBigInt, ToBigUint};
 use num_traits::{One, Zero};
 use rand::thread_rng;
 
-/// Структура, реализующая тест Миллера–Рабина
 pub struct MillerRabinTest;
 
 impl PrimalityTest for MillerRabinTest {

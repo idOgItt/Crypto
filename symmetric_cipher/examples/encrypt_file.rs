@@ -117,7 +117,7 @@ async fn main() -> std::io::Result<()> {
                 //
                 // ==== DEAL ====
                 //
-                let deal_key = random_key(24); // 3 DES-ключа
+                let deal_key = random_key(24);
                 let des_for_deal = DES::new(
                     Arc::new(DesKeyExpansion) as Arc<dyn KeyExpansion + Send + Sync>,
                     Arc::new(DesTransformation) as Arc<dyn EncryptionTransformation + Send + Sync>,

@@ -1,13 +1,12 @@
 use rsa::attacks::wiener::{WienerAttack, WienerAttackResult};
 use rsa::number_theory::extended_gcd;
-use rsa::primality::{PrimalityTest, MillerRabinTest};
+use rsa::primality::{MillerRabinTest, PrimalityTest};
 
 use num_bigint::{BigUint, RandBigInt, ToBigInt, ToBigUint};
 use num_traits::{FromPrimitive, One, Zero};
 use quickcheck::quickcheck;
 use rand::thread_rng;
 
-/// Генерация случайного простого числа заданной битовой длины
 fn gen_prime(bits: u64) -> BigUint {
     let mut rng = thread_rng();
     let test = MillerRabinTest;
@@ -21,7 +20,7 @@ fn gen_prime(bits: u64) -> BigUint {
 
 quickcheck! {
     fn prop_wiener_attack_detects_small_d(bits: u64) -> bool {
-        if bits < 8 || bits > 20 { return true; } // избегаем слишком малых и больших значений
+        if bits < 8 || bits > 20 { return true; }
         let p = gen_prime(bits);
         let mut q;
         loop {
@@ -32,7 +31,7 @@ quickcheck! {
         let n = &p * &q;
         let phi_n = (&p - BigUint::one()) * (&q - BigUint::one());
 
-        let d = BigUint::from(3u8); // намеренно малое d
+        let d = BigUint::from(3u8);
         let phi_bigint = phi_n.to_bigint().unwrap();
         let (_, mut e_big, _) = extended_gcd(&d.to_bigint().unwrap(), &phi_bigint);
         e_big = ((e_big % &phi_bigint) + &phi_bigint) % &phi_bigint;
@@ -78,7 +77,10 @@ fn test_wiener_attack_too_small_n() {
     let n = BigUint::from_u64(35).unwrap();
     let e = BigUint::from_u64(3).unwrap();
     let result = WienerAttack::attack(&n, &e);
-    assert!(result.is_none(), "Атака не должна сработать для слишком малого n");
+    assert!(
+        result.is_none(),
+        "Атака не должна сработать для слишком малого n"
+    );
 }
 
 #[test]

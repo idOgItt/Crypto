@@ -5,7 +5,6 @@ use num_integer::Integer;
 use num_traits::{One, Zero};
 use rand::thread_rng;
 
-/// Структура, реализующая тест Соловея–Штрассена
 pub struct SolovayStrassenTest;
 
 impl PrimalityTest for SolovayStrassenTest {
@@ -18,14 +17,14 @@ impl PrimalityTest for SolovayStrassenTest {
         }
 
         if n == &BigUint::from(3u32) {
-            return true; // 3 — простое
+            return true;
         }
 
         let mut rng = thread_rng();
         let upper = n - &one;
 
         if two >= upper {
-            return false; // нет допустимого диапазона
+            return false;
         }
 
         let a = rng.gen_biguint_range(&two, &upper);
@@ -33,7 +32,7 @@ impl PrimalityTest for SolovayStrassenTest {
         let a_bigint = a.to_bigint().unwrap();
         let n_bigint = n.to_bigint().unwrap();
         if n_bigint.is_even() || n_bigint.is_zero() {
-            return false; // n должно быть нечётным и положительным
+            return false;
         }
 
         let jacobi = jacobi_symbol(&a_bigint, &n_bigint);

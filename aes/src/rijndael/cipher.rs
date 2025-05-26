@@ -42,7 +42,6 @@ fn byte_to_poly(x: u8) -> Poly {
     for i in 0..8 {
         v.push((x >> i) & 1 != 0);
     }
-    // коэффициент x⁸ = 0
     v.push(false);
     v
 }
@@ -62,7 +61,6 @@ fn add_round_key(state: &mut State, round_key: &[u8]) {
             if idx < round_key.len() {
                 state[c][r] ^= round_key[idx];
             } else {
-                // Handle error case or log for debugging
                 println!("Error: round_key index {} out of bounds (len: {})", idx, round_key.len());
             }
         }
@@ -151,8 +149,7 @@ fn inv_mix_columns(state: &mut State, poly: &Poly) {
             ^ gf_mul_byte(a[3], 0x0e, poly);
     }
 }
-/// Encrypts a single 16-byte block with your round keys and GF(2⁸) poly
-/// Высокоуровневый AES-блок (4×Nb байт)
+
 fn encrypt_block_internal(
     block: &[u8],
     round_keys: &[Vec<u8>],
@@ -160,24 +157,22 @@ fn encrypt_block_internal(
     nb: usize,
 ) -> Vec<u8> {
     let mut state = block_to_state(block, nb);
-    // initial AddRoundKey
+
     add_round_key(&mut state, &round_keys[0]);
     let nr = round_keys.len() - 1;
-    // основные раунды
+    
     for round in 1..nr {
         sub_bytes(&mut state, poly);
         shift_rows(&mut state);
         mix_columns(&mut state, poly);
         add_round_key(&mut state, &round_keys[round]);
     }
-    // финальный раунд (без MixColumns)
     sub_bytes(&mut state, poly);
     shift_rows(&mut state);
     add_round_key(&mut state, &round_keys[nr]);
     state_to_block(&state)
 }
 
-/// Высокоуровневый AES-блок обратного направления
 fn decrypt_block_internal(
     block: &[u8],
     round_keys: &[Vec<u8>],
@@ -197,12 +192,10 @@ fn decrypt_block_internal(
         inv_shift_rows(&mut state);
         inv_sub_bytes(&mut state, poly);
     }
-    // final
     add_round_key(&mut state, &round_keys[0]);
     state_to_block(&state)
 }
 
-/// Ваш блочный шифр Rijndael (AES) с настраиваемым размером блока
 pub struct Rijndael {
     poly:       Poly,
     round_keys: Vec<Vec<u8>>,
@@ -210,7 +203,6 @@ pub struct Rijndael {
 }
 
 impl Rijndael {
-    /// Создаёт новый Rijndael с данным полиномом и размером блока (в байтах: 16, 24 или 32)
     pub fn new(poly: Poly, block_size: usize) -> Self {
         Self {
             poly,

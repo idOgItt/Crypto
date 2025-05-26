@@ -1,5 +1,3 @@
-// examples/encrypt_demo.rs
-
 use std::fs;
 use tokio;
 
@@ -27,10 +25,8 @@ fn random_key(len: usize, rng: &mut impl RngCore) -> Vec<u8> {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // Key lengths (bytes) to demo
     let key_sizes = [16usize, 24, 32];
 
-    // Cipher modes and paddings
     let modes = [
         CipherMode::ECB, CipherMode::CBC, CipherMode::PCBC,
         CipherMode::CFB, CipherMode::OFB, CipherMode::CTR,
@@ -53,7 +49,6 @@ async fn main() -> std::io::Result<()> {
     println!(" First round key: 0x{:08x}", round_keys[0]);
     println!(" Total round keys: {}", round_keys.len());
 
-    // 128-bit (16-byte) test block
     let block = [
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -61,11 +56,9 @@ async fn main() -> std::io::Result<()> {
 
     let mut cipher = Twofish::new(&key128);
 
-    // Get round keys
     let round_keys_bytes = cipher.export_round_keys().unwrap();
     println!(" First round key (bytes): {:02x?}", &round_keys_bytes[0..4]);
 
-    // Encrypt and decrypt
     let enc_vec = cipher.encrypt(&block);
     let dec_vec = cipher.decrypt(&enc_vec);
     println!(" Plaintext block: {:02x?}", block);

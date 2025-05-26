@@ -50,7 +50,7 @@ fn test_miller_rabin_on_small_n() {
 fn test_miller_rabin_large_cases() {
     let test = MillerRabinTest;
 
-    let prime = BigUint::parse_bytes(b"32416190071", 10).unwrap(); // простое
+    let prime = BigUint::parse_bytes(b"32416190071", 10).unwrap(); 
     let composite = &prime * 11u32;
 
     assert!(test.is_probably_prime(&prime, 0.99), "MR failed on large prime");
@@ -65,7 +65,7 @@ quickcheck! {
     fn prop_miller_rabin_rejects_odd_composites(a: u8, b: u8) -> bool {
         if a < 3 || b < 3 { return true; }
         let n = (a as u32) * (b as u32);
-        if n % 2 == 0 || n < 9 || a == b { return true; } // исключаем чётные, тривиальные, квадраты
+        if n % 2 == 0 || n < 9 || a == b { return true; }
         let n = BigUint::from(n);
         let test = MillerRabinTest;
         !test.is_probably_prime(&n, 0.99)

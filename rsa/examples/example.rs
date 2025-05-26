@@ -6,26 +6,23 @@ use rsa::rsa::{PrimalityType, RsaService};
 use rsa::attacks::{FermatAttack, WienerAttack};
 
 fn main() {
-    // 1) Генерация сервиса (внутри он вызывает RsaKeyGenerator и хранит RsaKeyPair)
     let rsa = RsaService::new(
-        PrimalityType::MillerRabin, // или Fermat, SolovayStrassen
-        0.99,     // confidence
-        128,      // bit length
+        PrimalityType::MillerRabin,
+        0.99,     
+        128,      
     );
 
-    // достаём (n, e) и (n, d)
     let (n, e) = rsa.public_key();
     let (_n, d) = rsa.private_key();
     println!("Сгенерирован ключ:\n  n = {}\n  e = {}\n  d = {}", n, e, d);
 
-    // 2) Шифрование/дешифрование через методы RsaService
     let msg = BigUint::from_u64(42).unwrap();
     let c   = rsa.encrypt(&msg);
     let m   = rsa.decrypt(&c);
     assert_eq!(m, msg);
     println!("Шифрование→дешифрование успешно: {msg} → {c} → {m}");
 
-    // 4) Атака Винера
+    // 1) Атака Винера
     if let Some(res) = WienerAttack::attack(&n, &e) {
         println!("WienerAttack Succeeded:");
         println!("  recovered d = {}", res.d);
@@ -37,7 +34,7 @@ fn main() {
         println!("WienerAttack failed (ключ не уязвим к Винеру)");
     }
 
-    //3) Атака Ферма
+    //2) Атака Ферма
     println!("Ferma attack now:");
     if let Some(res) = FermatAttack::attack(&n, &e) {
         println!("FermatAttack Succeeded:");

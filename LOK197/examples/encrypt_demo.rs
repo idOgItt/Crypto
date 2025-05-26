@@ -1,5 +1,3 @@
-// examples/demo_lok197.rs
-
 use std::fs;
 use tokio;
 
@@ -27,10 +25,8 @@ fn random_key(len: usize, rng: &mut impl RngCore) -> Vec<u8> {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // Key lengths (bytes) to demo
     let key_sizes = [16usize, 24, 32];
 
-    // Cipher modes and paddings
     let modes = [
         CipherMode::ECB, CipherMode::CBC, CipherMode::PCBC,
         CipherMode::CFB, CipherMode::OFB, CipherMode::CTR,
@@ -60,7 +56,6 @@ async fn main() -> std::io::Result<()> {
 
     let mut cipher = Loki97Cipher::new(&key128);
 
-    // Get round keys
     let round_keys_bytes = cipher.export_round_keys().unwrap();
     println!(" First round key (bytes): {:02x?}", &round_keys_bytes[0..8]);
 
@@ -108,7 +103,7 @@ async fn main() -> std::io::Result<()> {
                 let iv = if matches!(mode, CipherMode::ECB | CipherMode::RandomDelta) {
                     None
                 } else {
-                    Some(vec![0u8; 16]) // LOK197 использует 16-байтные блоки (128 бит)
+                    Some(vec![0u8; 16])
                 };
                 let mut ctx = CipherContext::new(
                     Box::new(Loki97Cipher::new(&key)) as _,

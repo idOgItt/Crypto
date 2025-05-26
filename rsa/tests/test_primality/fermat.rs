@@ -50,7 +50,7 @@ fn test_fermat_may_fail_on_carmichael_numbers() {
 #[test]
 fn test_fermat_on_small_n() {
     let test = FermatTest;
-    let values = [0u32, 1]; // убери 2 из списка
+    let values = [0u32, 1];
 
     for &v in &values {
         let n = BigUint::from_u32(v).unwrap();
@@ -75,7 +75,7 @@ use rand::thread_rng;
 
 quickcheck! {
     fn prop_fermat_detects_small_composites(n: u8) -> bool {
-        if n < 4 || n % 2 == 1 { return true; } // исключаем слишком малые и нечётные
+        if n < 4 || n % 2 == 1 { return true; }
         let test = FermatTest;
         let n = BigUint::from(n);
         !test.is_probably_prime(&n, 0.99)

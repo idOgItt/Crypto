@@ -36,9 +36,6 @@ fn test_encrypt_message_too_large() {
     assert!(result.is_err(), "encrypt() должен паниковать на слишком большом сообщении");
 }
 
-
-use rand::Rng;
-
 #[test]
 fn test_encrypt_decrypt_random_messages() {
     let service = RsaService::new(PrimalityType::MillerRabin, 0.99, 64);
@@ -70,10 +67,10 @@ quickcheck! {
     fn prop_encrypt_decrypt_roundtrip(x: u8) -> bool {
         let service = RsaService::new(PrimalityType::MillerRabin, 0.99, 64);
         let m = BigUint::from(x);
-        let (n, _) = service.public_key(); // получаем n
+        let (n, _) = service.public_key();
 
         if m >= n {
-            return true; // пропускаем недопустимые m
+            return true; 
         }
 
         let c = service.encrypt(&m);

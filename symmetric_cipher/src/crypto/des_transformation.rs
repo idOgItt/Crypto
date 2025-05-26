@@ -5,7 +5,7 @@ pub struct DesTransformation;
 
 fn get_bit(data: &[u8], bit_pos: usize) -> u8 {
     let byte = bit_pos / 8;
-    let bit = bit_pos % 8; // LSB-first
+    let bit = bit_pos % 8;
     (data[byte] >> bit) & 1
 }
 
@@ -26,13 +26,10 @@ fn xor_parts(a: &[u8], b: &[u8]) -> Vec<u8> {
 impl EncryptionTransformation for DesTransformation {
     fn transform(&self, r_block: &[u8], round_key: &[u8]) -> Vec<u8> {
 
-        // 1. Expansion
         let expanded = shift_bits_little_endian(r_block, &E, true, 1);
 
-        // 2. XOR
         let mixed = xor_parts(&expanded, round_key);
 
-        // 3. S-boxes
         let mut s_result = [0u8; 4];
         let mut bit_index = 0;
 
@@ -49,7 +46,6 @@ impl EncryptionTransformation for DesTransformation {
         }
 
 
-        // 4. P-permutation
         let permuted = shift_bits_little_endian(&s_result, &P, true, 1);
 
         permuted

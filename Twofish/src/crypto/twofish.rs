@@ -5,7 +5,6 @@ use crate::crypto::key_schedule::expand_key;
 use crate::crypto::pht::pht;
 use symmetric_cipher::crypto::cipher_traits::{CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds};
 
-/// Реализация шифра Twofish.
 pub struct Twofish {
     key: Vec<u8>,
     round_keys: Vec<u32>,
@@ -13,7 +12,6 @@ pub struct Twofish {
 }
 
 impl Twofish {
-    /// Создание Twofish с заданным ключом.
     pub fn new(key: &[u8]) -> Twofish {
         let key_len = key.len();
         if key_len != 16 && key_len != 24 && key_len != 32 {
@@ -27,29 +25,21 @@ impl Twofish {
         }
     }
 
-    /// Функция g из спецификации Twofish: ключезависимые S-боксы + MDS.
     fn g(&self, x: u32) -> u32 {
         let key_bytes = &self.key;
         let key_len = key_bytes.len();
 
-        // Разбиение слова на байты (little-endian)
         let b0 = (x & 0xFF) as u8;
         let b1 = ((x >> 8) & 0xFF) as u8;
         let b2 = ((x >> 16) & 0xFF) as u8;
         let b3 = (x >> 24) as u8;
-
-        // Для 128-битного ключа нужны индексы 0-15
-        // Для 192-битного ключа нужны индексы 0-23
-        // Для 256-битного ключа нужны индексы 0-31
 
         let mut y0 = b0;
         let mut y1 = b1;
         let mut y2 = b2;
         let mut y3 = b3;
 
-        // Применяем слои q в зависимости от длины ключа
         if key_len == 32 {
-            // 256-bit key: 4 слоя q
             y0 = q1(y0) ^ key_bytes[24];
             y1 = q0(y1) ^ key_bytes[25];
             y2 = q0(y2) ^ key_bytes[26];
@@ -57,21 +47,17 @@ impl Twofish {
         }
 
         if key_len >= 24 {
-            // 192-bit key и выше: 3 слоя q
             y0 = q1(y0) ^ key_bytes[16];
             y1 = q1(y1) ^ key_bytes[17];
             y2 = q0(y2) ^ key_bytes[18];
             y3 = q0(y3) ^ key_bytes[19];
         }
 
-        // Все ключи: последние 2 слоя q
         y0 = q1(q0(y0) ^ key_bytes[8]) ^ key_bytes[0];
         y1 = q0(q0(y1) ^ key_bytes[9]) ^ key_bytes[1];
         y2 = q1(q1(y2) ^ key_bytes[10]) ^ key_bytes[2];
         y3 = q0(q1(y3) ^ key_bytes[11]) ^ key_bytes[3];
 
-        // Применяем MDS-матрицу
-        // ВАЖНО: порядок байтов должен соответствовать тому, что ожидает mds_multiply
         let word = ((y0 as u32) << 24)
             | ((y1 as u32) << 16)
             | ((y2 as u32) << 8)
@@ -79,7 +65,6 @@ impl Twofish {
         mds_multiply(word)
     }
 
-    /// Функция F раунда Twofish
     fn f_function(&self, r0: u32, r1: u32, round: usize) -> (u32, u32) {
         let t0 = self.g(r0);
         let t1 = self.g(rotate_left(r1, 8));
@@ -93,13 +78,11 @@ impl Twofish {
         (f0, f1)
     }
 
-    /// Шифрование блока (16 байт).
     pub fn encrypt_block(&self, plaintext_block: &[u8]) -> Vec<u8> {
         if plaintext_block.len() != 16 {
             return Vec::new();
         }
 
-        // Разбиваем блок на 4 слова (little-endian!)
         let mut block = [0u32; 4];
         for i in 0..4 {
             block[i] = (plaintext_block[4*i] as u32)
@@ -108,16 +91,13 @@ impl Twofish {
                 | ((plaintext_block[4*i + 3] as u32) << 24);
         }
 
-        // Предварительное отбеливание (XOR с K0..K3)
         for i in 0..4 {
             block[i] ^= self.round_keys[i];
         }
 
-        // 16 раундов Feistel-схемы
         for r in 0..self.rounds {
             let (f0, f1) = self.f_function(block[0], block[1], r);
 
-            // Получаем новые значения правой половины
             let new_r2 = rotate_right(block[2] ^ f0, 1);
             let new_r3 = rotate_left(block[3], 1) ^ f1;
 
@@ -130,7 +110,6 @@ impl Twofish {
             block[3] = temp1;
         }
 
-        // Отменяем последний swap
         let temp0 = block[0];
         let temp1 = block[1];
         block[0] = block[2];
@@ -138,12 +117,10 @@ impl Twofish {
         block[2] = temp0;
         block[3] = temp1;
 
-        // Выходное отбеливание (XOR с K4..K7)
         for i in 0..4 {
             block[i] ^= self.round_keys[i + 4];
         }
 
-        // Сборка шифротекста в байты (little-endian!)
         let mut ciphertext = Vec::with_capacity(16);
         for i in 0..4 {
             ciphertext.push(block[i] as u8);
@@ -154,13 +131,11 @@ impl Twofish {
         ciphertext
     }
 
-    /// Расшифрование блока (16 байт).
     pub fn decrypt_block(&self, ciphertext_block: &[u8]) -> Vec<u8> {
         if ciphertext_block.len() != 16 {
             return Vec::new();
         }
 
-        // Разбираем блок на слова (little-endian!)
         let mut block = [0u32; 4];
         for i in 0..4 {
             block[i] = (ciphertext_block[4*i] as u32)
@@ -169,12 +144,10 @@ impl Twofish {
                 | ((ciphertext_block[4*i + 3] as u32) << 24);
         }
 
-        // Отменяем выходное отбеливание
         for i in 0..4 {
             block[i] ^= self.round_keys[i + 4];
         }
 
-        // Применяем swap перед обратными раундами
         let temp0 = block[0];
         let temp1 = block[1];
         block[0] = block[2];
@@ -182,9 +155,7 @@ impl Twofish {
         block[2] = temp0;
         block[3] = temp1;
 
-        // Обратные 16 раундов
         for r in (0..self.rounds).rev() {
-            // Обратный swap
             let temp0 = block[0];
             let temp1 = block[1];
             block[0] = block[2];
@@ -194,18 +165,15 @@ impl Twofish {
 
             let (f0, f1) = self.f_function(block[0], block[1], r);
 
-            // Восстанавливаем значения
             block[2] = rotate_left(block[2], 1) ^ f0;
             let temp = block[3] ^ f1;
             block[3] = rotate_right(temp, 1);
         }
 
-        // Удаляем входное отбеливание
         for i in 0..4 {
             block[i] ^= self.round_keys[i];
         }
 
-        // Сборка открытого текста в байты (little-endian!)
         let mut plaintext = Vec::with_capacity(16);
         for i in 0..4 {
             plaintext.push(block[i] as u8);
@@ -216,7 +184,6 @@ impl Twofish {
         plaintext
     }
 
-    /// Шифрование с указанным числом раундов.
     pub fn encrypt_with_rounds(&self, plaintext_block: &[u8], rounds: usize) -> Vec<u8> {
         let mut tmp = Twofish {
             key: self.key.clone(),
@@ -226,7 +193,6 @@ impl Twofish {
         tmp.encrypt_block(plaintext_block)
     }
 
-    /// Расшифрование с указанным числом раундов.
     pub fn decrypt_with_rounds(&self, ciphertext_block: &[u8], rounds: usize) -> Vec<u8> {
         let mut tmp = Twofish {
             key: self.key.clone(),
@@ -239,7 +205,6 @@ impl Twofish {
 
 impl CipherAlgorithm for Twofish {
     fn encrypt(&self, data: &[u8]) -> Vec<u8> {
-        // Требуем, чтобы данные были кратны 16 байтам
         assert_eq!(data.len() % 16, 0, "Data length must be multiple of 16");
 
         data.chunks_exact(16)
@@ -248,7 +213,6 @@ impl CipherAlgorithm for Twofish {
     }
 
     fn decrypt(&self, data: &[u8]) -> Vec<u8> {
-        // Требуем, чтобы данные были кратны 16 байтам
         assert_eq!(data.len() % 16, 0, "Data length must be multiple of 16");
 
         data.chunks_exact(16)
@@ -286,7 +250,6 @@ impl SymmetricCipherWithRounds for Twofish {
     }
 
     fn export_round_keys(&self) -> Option<Vec<u8>> {
-        // Экспортируем 40 раундовых ключей по 4 байта каждый = 160 байт
         Some(self.round_keys.iter()
             .flat_map(|&k| k.to_le_bytes())
             .collect())

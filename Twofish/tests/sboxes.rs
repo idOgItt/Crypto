@@ -54,8 +54,6 @@ mod tests {
 
     #[test]
     fn test_q_boxes_uniqueness() {
-        // Проверка, что в таблицах нет дубликатов (необязательно для Q-боксов,
-        // но полезно убедиться, что таблицы имеют хорошие свойства)
         let mut q0_values = std::collections::HashSet::new();
         let mut q1_values = std::collections::HashSet::new();
 

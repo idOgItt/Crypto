@@ -1,7 +1,5 @@
 use crate::crypto::cipher_traits::{CipherAlgorithm, SymmetricCipher, SymmetricCipherWithRounds};
-use crate::crypto::des_key_expansion::DesKeyExpansion;
 use crate::crypto::des_tables::{FP, IP};
-use crate::crypto::des_transformation::DesTransformation;
 use crate::crypto::encryption_transformation::EncryptionTransformation;
 use crate::crypto::feistel_network::FeistelNetwork;
 use crate::crypto::key_expansion::KeyExpansion;
@@ -48,11 +46,9 @@ impl DES {
 
 impl CipherAlgorithm for DES {
     fn encrypt(&self, block: &[u8]) -> Vec<u8> {
-        // Call the struct's own non-trait implementation
         DES::encrypt(self, block)
     }
     fn decrypt(&self, block: &[u8]) -> Vec<u8> {
-        // Call the struct's own non-trait implementation
         DES::decrypt(self, block)
     }
 }
@@ -76,13 +72,10 @@ impl SymmetricCipherWithRounds for DES {
     }
 
     fn encrypt_block(&self, data: &[u8], round_key: &[u8]) -> Vec<u8> {
-        // Since this accepts a single round_key, not a vector of round keys,
-        // we should reuse our normal encrypt method which uses self.round_key
         self.encrypt(data)
     }
 
     fn decrypt_block(&self, data: &[u8], round_key: &[u8]) -> Vec<u8> {
-        // Similarly, reuse our normal decrypt method
         self.decrypt(data)
     }
 
@@ -91,8 +84,6 @@ impl SymmetricCipherWithRounds for DES {
     }
 
     fn export_round_keys(&self) -> Option<Vec<u8>> {
-        // Возвращаем None, чтобы указать, что мы не используем предварительно
-        // вычисленные раундовые ключи, а генерируем их динамически
         None
     }
 }

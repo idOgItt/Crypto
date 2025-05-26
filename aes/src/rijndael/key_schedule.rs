@@ -2,18 +2,15 @@ use symmetric_cipher::crypto::key_expansion::KeyExpansion;
 use crate::gf::arithmetic::{poly_mulmod, Poly};
 use crate::rijndael::sbox::sbox;
 
-/// Генерация всех раундовых ключей AES (KeyExpansion) с учетом размера блока
 pub fn expand_key(key: &[u8], poly: &Poly, block_size: usize) -> Vec<Vec<u8>> {
-    // Rijndael parameters
-    let nk = key.len() / 4;  // Key length in 32-bit words
-    let nb = block_size / 4; // Block size in 32-bit words
-    let nr = std::cmp::max(nk, nb) + 6; // Number of rounds based on max of key/block size
-    let total_words = nb * (nr + 1);    // Total number of words needed for all round keys
+    let nk = key.len() / 4;
+    let nb = block_size / 4;
+    let nr = std::cmp::max(nk, nb) + 6;
+    let total_words = nb * (nr + 1);
 
-    // Вспомогательные лямбды
     fn byte_to_poly(x: u8) -> Poly {
         let mut v = (0..8).map(|i| (x >> i) & 1 != 0).collect::<Vec<bool>>();
-        v.push(false); // x⁸ = 0
+        v.push(false);
         v
     }
     fn poly_to_byte(p: &Poly) -> u8 {
@@ -34,28 +31,23 @@ pub fn expand_key(key: &[u8], poly: &Poly, block_size: usize) -> Vec<Vec<u8>> {
         [ sbox(w[0], poly), sbox(w[1], poly), sbox(w[2], poly), sbox(w[3], poly) ]
     }
 
-    // Rcon[i] = {02}⁽ⁱ⁻¹⁾ в GF(2⁸)
     let mut rcon = vec![0u8; nr+1];
     rcon[1] = 1;
     for i in 2..=nr {
         rcon[i] = gf_mul(rcon[i-1], 2, poly);
     }
 
-    // W — вектор слов (4 байта каждое)
     let mut w = Vec::<[u8;4]>::with_capacity(total_words);
-
-    // первые Nk слов — из ключа
     for i in 0..nk {
         let offset = 4*i;
         w.push([ key[offset], key[offset+1], key[offset+2], key[offset+3] ]);
     }
 
-    // генерим остальные
     for i in nk..total_words {
         let mut temp = w[i-1];
         if i % nk == 0 {
             temp = sub_word(rot_word(temp), poly);
-            if i / nk < rcon.len() { // Add this check
+            if i / nk < rcon.len() {
                 temp[0] ^= rcon[i / nk];
             }
         } else if nk > 6 && i % nk == 4 {
@@ -68,7 +60,6 @@ pub fn expand_key(key: &[u8], poly: &Poly, block_size: usize) -> Vec<Vec<u8>> {
             prev[3] ^ temp[3] ]);
     }
 
-    // Собираем Vec<Vec<u8>>: по Nb слов на раунд
     let mut round_keys = Vec::with_capacity(nr+1);
     for round in 0..(nr+1) {
         let mut rk = Vec::with_capacity(4*nb);
@@ -81,24 +72,20 @@ pub fn expand_key(key: &[u8], poly: &Poly, block_size: usize) -> Vec<Vec<u8>> {
     round_keys
 }
 
-/// Обёртка-генератор ключей для AES, реализующая trait из symmetric_cipher
 pub struct AesKeyExpansion {
     poly: Poly,
     block_size: usize,
 }
 
 impl AesKeyExpansion {
-    /// Create a new AES key expansion with the given polynomial and block size (in bytes)
     pub fn new(poly: Poly, block_size: usize) -> Self {
         Self { poly, block_size }
     }
 
-    /// Get the underlying polynomial
     pub fn poly(&self) -> &Poly {
         &self.poly
     }
 
-    /// Get the block size in bytes
     pub fn block_size(&self) -> usize {
         self.block_size
     }

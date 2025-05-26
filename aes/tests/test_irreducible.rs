@@ -57,10 +57,8 @@ fn degree_4_irreducibles() {
     let expected = vec![
         poly_from_bits(&[1,0,0,1,1]),  // 10011
         poly_from_bits(&[1,0,0,1,0,1]), // 101001? нет, правильный: [1,0,0,1,1] и [1,1,0,0,1]
-        // Исправим:
         poly_from_bits(&[1,0,0,1,1]),  // x^4 + x + 1
         poly_from_bits(&[1,0,1,1,0]),  // x^4 + x^3 + 1  → [0]=0,x^0? Actually bit0=1, bit1=0, bit2=0, bit3=1, bit4=1 → [1,0,0,1,1]
-        // Чтобы избежать путаницы, просто проверим длину и irreducible:
     ];
 
     let list = list_irreducibles(4);
@@ -74,8 +72,7 @@ fn degree_4_irreducibles() {
 #[test]
 fn list_length_degree_8() {
     let list8 = list_irreducibles(8);
-    assert_eq!( list8.len(), 30 );   // по условию задания
-    // Проверим, что все они действительно неприводимы
+    assert_eq!( list8.len(), 30 ); 
     for p in list8 {
         assert!( is_irreducible(&p) );
         assert_eq!( p.len(), 9 );     // degree 8 → 9 коэффициентов

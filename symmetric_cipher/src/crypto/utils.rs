@@ -59,12 +59,8 @@ pub fn bits_to_bytes(bits: &BitVec) -> Vec<u8> {
     bytes
 }
 
-/// Применяет паддинг к данным согласно заданному режиму
 pub fn apply_padding(mut data: Vec<u8>, block_size: usize, padding: PaddingMode) -> Vec<u8> {
-    // Для случаев, когда данные уже кратны block_size,
-    // определяем поведение в зависимости от типа паддинга
     let padding_length = if data.len() % block_size == 0 && !data.is_empty() {
-        // Для PKCS7, ANSI_X923 и ISO10126 всегда добавляем полный блок паддинга
         if matches!(
             padding,
             PaddingMode::PKCS7 | PaddingMode::ANSI_X923 | PaddingMode::ISO10126
@@ -74,20 +70,16 @@ pub fn apply_padding(mut data: Vec<u8>, block_size: usize, padding: PaddingMode)
             }
             block_size
         } else {
-            // Для остальных типов паддинга не добавляем ничего
             0
         }
     } else {
-        // Обычный случай - дополняем до размера блока
         block_size - (data.len() % block_size)
     };
 
-    // Если не нужен паддинг, сразу возвращаем данные
     if padding_length == 0 {
         return data;
     }
 
-    // Применяем паддинг по заданному режиму
     match padding {
         PaddingMode::Zeros => data.extend(vec![0; padding_length]),
         PaddingMode::ANSI_X923 => {
@@ -132,7 +124,6 @@ pub fn is_full_padding_block(data: &[u8], block_size: usize, padding: &PaddingMo
 }
 
 
-/// Удаляет паддинг из расшифрованных данных
 pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
     //eprintln!("remove_padding called on: {:?}", data);
     let block_size = data.len();
@@ -190,7 +181,6 @@ pub fn remove_padding(mut data: Vec<u8>, padding: PaddingMode) -> Vec<u8> {
 
 
 
-/// Приводит блок к нужному размеру: паддинг для шифрования, нули для расшифрования
 pub fn normalize_block(
     mut block: Vec<u8>,
     block_size: usize,

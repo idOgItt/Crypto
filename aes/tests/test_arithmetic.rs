@@ -1,7 +1,6 @@
 use rijndael::gf::arithmetic::{poly_add, poly_divmod, poly_inv, poly_mod, poly_mul, poly_mulmod, poly_powmod, Poly};
 
 fn poly_from_bits(bits: &[u8]) -> Poly {
-    // вспомогательная функция: bits[i]==1 → coefficient true
     bits.iter().map(|&b| b != 0).collect()
 }
 
@@ -11,7 +10,6 @@ fn bits_from_poly(p: &Poly) -> Vec<u8> {
 
 #[test]
 fn test_poly_add_same_length() {
-    // (1 + x^2) + (1 + x) = x^2 + x
     let a = poly_from_bits(&[1,0,1]);
     let b = poly_from_bits(&[1,1,0]);
     let c = poly_add(&a, &b);

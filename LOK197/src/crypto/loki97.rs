@@ -27,14 +27,11 @@ impl Loki97Cipher {
         let mut right = block[8..16].to_vec();
 
         for &sk in &self.round_keys {
-            // Convert right half to u64 for the round function
             let r_u64 = u64::from_be_bytes(right.clone().try_into().unwrap());
             let f_out = round_function(r_u64, sk);
 
-            // Convert function output back to bytes
             let f_bytes = f_out.to_be_bytes();
 
-            // XOR left half with function output
             let new_right: Vec<u8> = left.iter()
                 .zip(f_bytes.iter())
                 .map(|(a, b)| a ^ b)
@@ -44,7 +41,7 @@ impl Loki97Cipher {
             right = new_right;
         }
 
-        [right, left].concat() // Swap after last round
+        [right, left].concat()
     }
 
     /// Decrypt one 128-bit block via 16‐round Feistel.
@@ -55,14 +52,11 @@ impl Loki97Cipher {
         let mut left = block[8..16].to_vec();
 
         for &sk in self.round_keys.iter().rev() {
-            // Convert left half to u64 for the round function
             let l_u64 = u64::from_be_bytes(left.clone().try_into().unwrap());
             let f_out = round_function(l_u64, sk);
 
-            // Convert function output back to bytes
             let f_bytes = f_out.to_be_bytes();
 
-            // XOR right half with function output
             let new_left: Vec<u8> = right.iter()
                 .zip(f_bytes.iter())
                 .map(|(a, b)| a ^ b)
@@ -110,11 +104,10 @@ impl SymmetricCipher for Loki97Cipher {
 
 impl SymmetricCipherWithRounds for Loki97Cipher {
     fn block_size(&self) -> usize {
-        16 // 128 bits = 16 bytes
+        16
     }
 
     fn export_round_keys(&self) -> Option<Vec<u8>> {
-        // 16 × 8 = 128 bytes
         Some(self
             .round_keys
             .iter()

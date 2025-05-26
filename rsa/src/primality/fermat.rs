@@ -4,7 +4,6 @@ use num_bigint::{BigUint, RandBigInt};
 use num_traits::One;
 use rand::thread_rng;
 
-/// Структура, реализующая тест Ферма
 pub struct FermatTest;
 
 impl PrimalityTest for FermatTest {

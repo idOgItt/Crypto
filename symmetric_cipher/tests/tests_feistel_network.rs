@@ -35,11 +35,9 @@ mod tests {
         let key = b"dummykey";
         let block = b"\x12\x34\x56\x78\x9A\xBC\xDE\xF0";
 
-        // Generate round keys
         let key_expansion = MockKeyExpansion;
         let round_keys = key_expansion.generate_round_keys(key);
 
-        // Use the round keys versions
         let encrypted = network.encrypt_with_round_keys(block, &round_keys);
         let decrypted = network.decrypt_with_round_keys(&encrypted, &round_keys);
 
@@ -57,11 +55,9 @@ mod tests {
         let key = b"dummykey";
         let block = b"\x00\x11\x22\x33\x44\x55\x66\x77";
 
-        // Generate round keys
         let key_expansion = MockKeyExpansion;
         let round_keys = key_expansion.generate_round_keys(key);
 
-        // Use the round keys versions
         let encrypted = network.encrypt_with_round_keys(block, &round_keys);
         assert_eq!(encrypted.len(), block.len());
 

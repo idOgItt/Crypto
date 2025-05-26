@@ -41,18 +41,14 @@ pub fn is_irreducible(poly: &Poly) -> bool {
     if n < 1 || !is_monic(poly) {
         return false;
     }
-    // x (полином "x")
     let x: Poly = vec![false, true];
-    // 1) f(x) должно делить x^(2^n) - x
     let xp = poly_powmod(&x, 1 << n, poly);
-    // проверяем, что (xp - x) mod f == 0
     let diff = poly_add(&xp, &x);
     let diff_mod = poly_mod(&diff, poly);
     if !diff_mod.is_empty() {
         return false;
     }
-    // 2) для каждого делителя d < n: gcd(x^(2^d) - x, f) = 1
-    // найдём простые делители n
+
     let mut d = 1;
     while d * d <= n {
         if n % d == 0 {
@@ -75,14 +71,12 @@ pub fn is_irreducible(poly: &Poly) -> bool {
 /// Генерация всех неприводимых полиномов степени `n`
 pub fn list_irreducibles(n: usize) -> Vec<Poly> {
     let mut res = Vec::new();
-    // итерация по всем 2^n полиномам степени < n, но с монодальным битом
     let total = 1 << n;
     for mask in 0..total {
         let mut p = Vec::with_capacity(n + 1);
         for i in 0..n {
             p.push(((mask >> i) & 1) != 0);
         }
-        // старший коэффициент = 1
         p.push(true);
         if is_irreducible(&p) {
             res.push(p);

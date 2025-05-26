@@ -2,7 +2,6 @@ use crate::crypto::cipher_types::{CipherInput, CipherOutput};
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter, Read, Write};
 
-/// Чтение всех байтов из CipherInput
 pub fn read_all(input: &CipherInput) -> io::Result<Vec<u8>> {
     match input {
         CipherInput::Bytes(data) => Ok(data.clone()),
@@ -15,7 +14,6 @@ pub fn read_all(input: &CipherInput) -> io::Result<Vec<u8>> {
     }
 }
 
-/// Запись всех байтов в CipherOutput
 pub fn write_all(output: &mut CipherOutput, data: &[u8]) -> io::Result<()> {
     match output {
         CipherOutput::Buffer(buffer) => {
@@ -32,7 +30,6 @@ pub fn write_all(output: &mut CipherOutput, data: &[u8]) -> io::Result<()> {
 }
 
 /// Поблочное чтение из файла с обработкой блока
-/// Поблочное чтение из файла с флагом последнего блока
 pub fn read_blockwise_with_end<F>(path: &str, block_size: usize, mut handle_block: F) -> io::Result<()>
 where
     F: FnMut(&[u8], bool) -> io::Result<()>,

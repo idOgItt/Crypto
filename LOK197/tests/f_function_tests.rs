@@ -1,5 +1,3 @@
-// tests/f_function_tests.rs
-
 use LOK197::crypto::f_function::round_function;
 
 #[test]

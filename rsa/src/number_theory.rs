@@ -2,7 +2,6 @@ use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Zero, Signed, ToPrimitive};
 
-/// Вычисление НОД по алгоритму Евклида
 pub fn gcd(a: &BigUint, b: &BigUint) -> BigUint {
     let mut a = a.clone();
     let mut b = b.clone();
@@ -14,7 +13,6 @@ pub fn gcd(a: &BigUint, b: &BigUint) -> BigUint {
     a
 }
 
-/// Расширенный алгоритм Евклида
 /// Возвращает (g, x, y) такие что: ax + by = g = gcd(a, b)
 pub fn extended_gcd(a: &BigInt, b: &BigInt) -> (BigInt, BigInt, BigInt) {
     let (mut old_r, mut r) = (a.clone(), b.clone());
@@ -61,7 +59,6 @@ pub fn mod_pow(base: &BigUint, exponent: &BigUint, modulus: &BigUint) -> BigUint
 
 /// Символ Лежандра (a|p), p — нечётное простое
 pub fn legendre_symbol(a: &BigInt, p: &BigInt) -> i32 {
-    // Проверка: p должно быть >1 и нечётным
     if p <= &BigInt::one() || !p.is_odd() {
         panic!("p must be an odd prime");
     }
@@ -70,9 +67,7 @@ pub fn legendre_symbol(a: &BigInt, p: &BigInt) -> i32 {
     let a_mod = ((a % p) + p) % p;
     let a_mod_uint = a_mod.to_biguint().unwrap();
 
-    // Перевод p в BigUint
     let modulus = p.to_biguint().unwrap();
-    // exp = (p-1)/2
     let exp = (&modulus - BigUint::one()) >> 1;
 
     let res = mod_pow(&a_mod_uint, &exp, &modulus);
@@ -101,7 +96,6 @@ pub fn jacobi_symbol(a: &BigInt, n: &BigInt) -> i32 {
     let mut result = 1;
 
     while a != BigInt::zero() {
-        // убираем фактор 2 из a
         while a.is_even() {
             a >>= 1;
             // если n ≡ 3 или 5 (mod 8) — меняем знак
@@ -110,7 +104,7 @@ pub fn jacobi_symbol(a: &BigInt, n: &BigInt) -> i32 {
                 result = -result;
             }
         }
-        // квадратичная взаимность
+
         std::mem::swap(&mut a, &mut n);
         if &a % 4u8 == BigInt::from(3) && &n % 4u8 == BigInt::from(3) {
             result = -result;

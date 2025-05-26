@@ -34,28 +34,22 @@ impl DEAL {
     }
 
     pub fn encrypt(&self, block: &[u8], key: &[u8]) -> Vec<u8> {
-        // Generate the round keys once
         let round_keys = self.key_expansion.generate_round_keys(key);
-        // Use the with_round_keys version
         self.feistel_network.encrypt_with_round_keys(block, &round_keys)
     }
 
     pub fn decrypt(&self, block: &[u8], key: &[u8]) -> Vec<u8> {
-        // Generate the round keys once
         let round_keys = self.key_expansion.generate_round_keys(key);
-        // Use the with_round_keys version
         self.feistel_network.decrypt_with_round_keys(block, &round_keys)
     }
 }
 
 impl CipherAlgorithm for DEAL {
     fn encrypt(&self, block: &[u8]) -> Vec<u8> {
-        // Use the pre-computed round keys
         self.feistel_network.encrypt_with_round_keys(block, &self.round_key)
     }
 
     fn decrypt(&self, block: &[u8]) -> Vec<u8> {
-        // Use the pre-computed round keys
         self.feistel_network.decrypt_with_round_keys(block, &self.round_key)
     }
 }
@@ -77,12 +71,10 @@ impl SymmetricCipherWithRounds for DEAL {
     }
 
     fn encrypt_block(&self, data: &[u8], round_key: &[u8]) -> Vec<u8> {
-        // Use the pre-computed round keys in self.round_key
         self.feistel_network.encrypt_with_round_keys(data, &self.round_key)
     }
 
     fn decrypt_block(&self, data: &[u8], round_key: &[u8]) -> Vec<u8> {
-        // Use the pre-computed round keys in self.round_key
         self.feistel_network.decrypt_with_round_keys(data, &self.round_key)
     }
 

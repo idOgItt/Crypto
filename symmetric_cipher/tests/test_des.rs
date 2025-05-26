@@ -2,11 +2,10 @@
 mod tests {
     use std::sync::Arc;
     use symmetric_cipher::crypto::cipher_context::CipherContext;
-    use super::*;
     use symmetric_cipher::crypto::des::DES;
     use symmetric_cipher::crypto::des_key_expansion::DesKeyExpansion;
     use symmetric_cipher::crypto::des_transformation::DesTransformation;
-    use symmetric_cipher::crypto::cipher_traits::{CipherAlgorithm, SymmetricCipher};
+    use symmetric_cipher::crypto::cipher_traits::{SymmetricCipher};
     use symmetric_cipher::crypto::cipher_types::{CipherInput, CipherMode, CipherOutput, PaddingMode};
 
     #[test]
@@ -32,8 +31,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_des_cbc_ansi_x923_encrypt_decrypt() {
-        let key = b"12345678"; // 8 байт для DES
-        let iv = Some(vec![0u8; 8]); // IV нужен для CBC
+        let key = b"12345678"; 
+        let iv = Some(vec![0u8; 8]); 
         let plaintext = b"Hello, world!\n";
     
         let des = DES::new(
@@ -45,13 +44,13 @@ mod tests {
             CipherMode::CBC,
             PaddingMode::ANSI_X923,
             iv.clone(),
-            vec![], // дополнительные параметры (например, ключи раундов)
+            vec![],
         );
     
         ctx.set_key(key).unwrap();
     
-        // Шифруем
-        let mut encrypted_buf = Box::new(Vec::new());
+        // Encrypt
+        let encrypted_buf = Box::new(Vec::new());
         let mut encrypted_output = CipherOutput::Buffer(encrypted_buf);
         ctx.encrypt(CipherInput::Bytes(plaintext.to_vec()), &mut encrypted_output)
             .await
@@ -63,8 +62,8 @@ mod tests {
             panic!("Expected buffer output");
         };
     
-        // Дешифруем
-        let mut decrypted_buf = Box::new(Vec::new());
+        // Decrypt
+        let decrypted_buf = Box::new(Vec::new());
         let mut decrypted_output = CipherOutput::Buffer(decrypted_buf);
         ctx.decrypt(CipherInput::Bytes(encrypted.clone()), &mut decrypted_output)
             .await

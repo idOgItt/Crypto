@@ -1,5 +1,3 @@
-// src/crypto/pht.rs
-
 /// Pseudo-Hadamard Transform:
 /// (a, b) → (a + b mod 2^32, a + 2·b mod 2^32)
 pub fn pht(a: u32, b: u32) -> (u32, u32) {

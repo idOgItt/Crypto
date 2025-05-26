@@ -1,6 +1,4 @@
-// benches/cipher_bench.rs
-
-use std::time::{Duration, Instant}; // ← добавили Instant
+use std::time::{Duration, Instant};
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use tokio::runtime::Runtime;
 
@@ -32,7 +30,6 @@ impl SymmetricCipherWithRounds for IdentityCipher {
 }
 
 fn bench_large_file(c: &mut Criterion) {
-    // 1. Создаём 1 ГБ входной файл один раз:
     let mut input_file = NamedTempFile::new().unwrap();
     let mut buffer = vec![0u8; 1024 * 1024];
     let mut rng = rand::rng();
@@ -48,7 +45,6 @@ fn bench_large_file(c: &mut Criterion) {
 
     let rt = Runtime::new().unwrap();
 
-    // 3. Сам бенчмарк:
     group.bench_function(
         BenchmarkId::new("ECB File Encrypt", "1GB"),
         move |b| {
@@ -68,14 +64,14 @@ fn bench_large_file(c: &mut Criterion) {
                         let output_file = NamedTempFile::new().unwrap();
                         let output_path = output_file.path().to_string_lossy().into_owned();
 
-                        let start = Instant::now(); // ← старт замера
+                        let start = Instant::now();
                         ctx.encrypt(
                             CipherInput::File(input.clone()),
                             &mut CipherOutput::File(output_path),
                         )
                             .await
                             .unwrap();
-                        println!("One encrypt duration: {:?}", start.elapsed()); // ← лог
+                        println!("One encrypt duration: {:?}", start.elapsed());
                     }
                 })
         },

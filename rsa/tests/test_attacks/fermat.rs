@@ -4,20 +4,17 @@ use rsa::number_theory::extended_gcd;
 
 #[test]
 fn test_fermat_attack_success() {
-    // Заранее подготовленные p и q близки => уязвимы для атаки Ферма
     let p = 10007u32.to_biguint().unwrap();
     let q = 10009u32.to_biguint().unwrap();
     let n = &p * &q;
     let phi_n = (&p - 1u32) * (&q - 1u32);
     let e = 65537u32.to_biguint().unwrap();
 
-    // Найдём d = e^-1 mod phi(n)
     let (_, mut d, _) = extended_gcd(&e.to_bigint().unwrap(), &phi_n.to_bigint().unwrap());
     let phi_bigint = phi_n.to_bigint().unwrap();
     d = ((d % &phi_bigint) + &phi_bigint) % &phi_bigint;
     let d = d.to_biguint().unwrap();
 
-    // Атака
     let result = FermatAttack::attack(&n, &e).expect("Атака не удалась");
 
     assert_eq!(result.d, d);
