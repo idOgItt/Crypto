@@ -4,14 +4,12 @@ use num_traits::One;
 use rand::thread_rng;
 use crate::number_theory::{extended_gcd, gcd};
 
-/// Выбор теста простоты
 pub enum PrimalityType {
     Fermat,
     SolovayStrassen,
     MillerRabin,
 }
 
-/// Структура открытого и закрытого ключа RSA
 pub struct RsaKeyPair {
     pub n: BigUint,
     pub e: BigUint,
@@ -37,7 +35,6 @@ impl RsaKeyPair {
 
 
 
-/// Сервис генерации ключей RSA
 pub struct RsaKeyGenerator {
     test_type: PrimalityType,
     confidence: f64,
@@ -45,7 +42,6 @@ pub struct RsaKeyGenerator {
 }
 
 impl RsaKeyGenerator {
-    /// Создание нового генератора
     pub fn new(test_type: PrimalityType, confidence: f64, bit_length: usize) -> Self {
         Self { test_type, confidence, bit_length }
     }
@@ -83,7 +79,7 @@ impl RsaKeyGenerator {
 
             let n = &p * &q;
             if n.bits() < self.bit_length as u64 {
-                continue; // пробуем заново
+                continue; 
             }
 
             let phi = (&p - &one) * (&q - &one);

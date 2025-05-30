@@ -68,6 +68,7 @@ pub fn legendre_symbol(a: &BigInt, p: &BigInt) -> i32 {
     let a_mod_uint = a_mod.to_biguint().unwrap();
 
     let modulus = p.to_biguint().unwrap();
+    // Legendre
     let exp = (&modulus - BigUint::one()) >> 1;
 
     let res = mod_pow(&a_mod_uint, &exp, &modulus);
@@ -106,6 +107,7 @@ pub fn jacobi_symbol(a: &BigInt, n: &BigInt) -> i32 {
         }
 
         std::mem::swap(&mut a, &mut n);
+        // Jacobi
         if &a % 4u8 == BigInt::from(3) && &n % 4u8 == BigInt::from(3) {
             result = -result;
         }

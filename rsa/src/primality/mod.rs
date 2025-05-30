@@ -7,12 +7,10 @@ pub use solovay_strassen::SolovayStrassenTest;
 
 use num_bigint::BigUint;
 
-/// Интерфейс для вероятностного теста простоты.
-/// Использует шаблонный метод: фиксированный public API, переопределяется одна итерация.
+/// Использует шаблонный метод
 pub trait PrimalityTest {
-    /// Основной метод: возвращает true, если n — вероятно простое с заданной вероятностью
     fn is_probably_prime(&self, n: &BigUint, confidence: f64) -> bool {
-        let iterations = confidence_to_iterations(confidence);
+        let iterations = confidence_to_iterations(confidence, self.error_probability());
         for _ in 0..iterations {
             if !self.run_iteration(n) {
                 return false;
@@ -21,11 +19,20 @@ pub trait PrimalityTest {
         true
     }
 
-    /// Одна итерация теста — реализуется в подклассах
     fn run_iteration(&self, n: &BigUint) -> bool;
+
+    fn error_probability(&self) -> f64 {
+        0.5
+    }
 }
-fn confidence_to_iterations(confidence: f64) -> u32 {
-    // Пример: вероятность ошибки каждой итерации 1/2,
-    // тогда confidence = 1 - (1/2)^k  =>  k = log2(1 / (1 - confidence))
-    ((1.0 / (1.0 - confidence)).log2().ceil()) as u32
+
+fn confidence_to_iterations(confidence: f64, per_iter_error: f64) -> u32 {
+    assert!(confidence >= 0.0 && confidence < 1.0,
+            "confidence must be in [0,1), got {}", confidence);
+    assert!(per_iter_error > 0.0 && per_iter_error < 1.0,
+            "per-iteration error must be in (0,1), got {}", per_iter_error);
+
+    let k = ((1.0 - confidence).ln() / per_iter_error.ln()).ceil() as i32;
+
+    std::cmp::max(k, 1) as u32
 }

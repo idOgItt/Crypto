@@ -54,4 +54,7 @@ impl PrimalityTest for MillerRabinTest {
 
         false
     }
+    fn error_probability(&self) -> f64 {
+        0.25
+    }
 }
