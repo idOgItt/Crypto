@@ -217,7 +217,6 @@ impl CipherAlgorithm for Rijndael {
         let bs = self.block_size * 4;
         data.chunks(bs)
             .flat_map(|chunk| {
-                // pad/resilience к неполному блоку делает CipherContext
                 encrypt_block_internal(chunk, &self.round_keys, &self.poly, self.block_size)
             })
             .collect()
