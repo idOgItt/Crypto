@@ -56,7 +56,6 @@ pub fn is_irreducible(poly: &Poly) -> bool {
                 if k < n && k > 0 {
                     let xp_k = poly_powmod(&x, 1 << k, poly);
                     let g = poly_gcd(poly_add(&xp_k, &x), poly.clone());
-                    // gcd должно быть константой 1
                     if !(g.len() == 1 && g[0]) {
                         return false;
                     }
