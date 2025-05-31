@@ -1,4 +1,3 @@
-// src/crypto/mds.rs
 use crate::crypto::gf256::gf_mul;
 
 /// Преобразование MDS-матрицы над GF(2^8) для 32-битного слова.
