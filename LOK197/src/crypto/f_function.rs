@@ -1,5 +1,3 @@
-// src/crypto/f_function.rs
-
 use crate::crypto::sboxes::{s1, s2};
 use crate::crypto::permutation::P;
 
