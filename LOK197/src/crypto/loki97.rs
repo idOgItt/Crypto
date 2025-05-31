@@ -6,12 +6,10 @@ use crate::crypto::f_function::round_function;
 
 #[derive(Clone)]
 pub struct Loki97Cipher {
-    /// Exactly 16 round‐keys (64-bit each) used in the Feistel network
     round_keys: Vec<u64>,
 }
 
 impl Loki97Cipher {
-    /// Create a new cipher, deriving 48 subkeys but keeping only the first 16.
     pub fn new(master_key: &[u8]) -> Self {
         let all_keys = expand_key(master_key);
         assert!(all_keys.len() >= 16, "Key schedule must produce ≥16 words");
@@ -19,7 +17,6 @@ impl Loki97Cipher {
         Loki97Cipher { round_keys: rk }
     }
 
-    /// Encrypt one 128-bit block via 16‐round Feistel.
     fn feistel_encrypt_block(&self, block: &[u8]) -> Vec<u8> {
         assert_eq!(block.len(), 16, "Block must be 16 bytes (128 bits)");
 
@@ -44,7 +41,6 @@ impl Loki97Cipher {
         [right, left].concat()
     }
 
-    /// Decrypt one 128-bit block via 16‐round Feistel.
     fn feistel_decrypt_block(&self, block: &[u8]) -> Vec<u8> {
         assert_eq!(block.len(), 16, "Block must be 16 bytes (128 bits)");
 
@@ -103,18 +99,6 @@ impl SymmetricCipher for Loki97Cipher {
 }
 
 impl SymmetricCipherWithRounds for Loki97Cipher {
-    fn block_size(&self) -> usize {
-        16
-    }
-
-    fn export_round_keys(&self) -> Option<Vec<u8>> {
-        Some(self
-            .round_keys
-            .iter()
-            .flat_map(|&k| k.to_be_bytes())
-            .collect())
-    }
-
     fn set_key_with_rounds(&mut self, raw: &[u8]) {
         assert_eq!(raw.len(), 16 * 8, "Expected 128 bytes of round keys");
         self.round_keys = raw
@@ -133,5 +117,17 @@ impl SymmetricCipherWithRounds for Loki97Cipher {
         let mut tmp = self.clone();
         tmp.set_key_with_rounds(raw_round_keys);
         tmp.feistel_decrypt_block(block)
+    }
+
+    fn block_size(&self) -> usize {
+        16
+    }
+
+    fn export_round_keys(&self) -> Option<Vec<u8>> {
+        Some(self
+            .round_keys
+            .iter()
+            .flat_map(|&k| k.to_be_bytes())
+            .collect())
     }
 }
