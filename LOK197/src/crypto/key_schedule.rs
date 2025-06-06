@@ -41,7 +41,7 @@ impl KeyExpansion for Loki97Cipher {
         let round_keys_64 = expand_key(master_key);
         round_keys_64
             .into_iter()
-            .map(|key| key.to_be_bytes().to_vec()) // Исправлено на big-endian
+            .map(|key| key.to_be_bytes().to_vec())
             .collect()
     }
 }
