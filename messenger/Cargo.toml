@@ -1,0 +1,41 @@
+[workspace]
+members = [
+    "libs/symmetric_cipher",
+    "libs/loki97_crypto",
+    "libs/twofish_crypto",
+    "libs/dh_crypto",
+    "libs/messenger_protos",
+    "server",
+    "cli_client",
+    "gui_client"
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Common dependencies can be listed here
+tokio = { version = "1", features = ["full"] }
+tonic = "0.11"
+prost = "0.12"
+rand = "0.8"
+hex = "0.4"
+num-bigint = { version = "0.4", features = ["rand"] }
+num-traits = "0.2"
+uuid = { version = "1", features = ["v4", "serde"] }
+log = "0.4"
+env_logger = "0.11"
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+# GUI Specific
+iced = { version = "0.12", features = ["tokio", "debug", "qr_code", "wayland", "image", "svg"] } # Added image/svg
+rfd = "0.14" # For native file dialogs
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled", "chrono"] }
+
+# Crypto libs (local paths)
+symmetric_cipher = { path = "libs/symmetric_cipher" }
+loki97_crypto = { path = "libs/loki97_crypto" }
+twofish_crypto = { path = "libs/twofish_crypto" }
+dh_crypto = { path = "libs/dh_crypto" }
+messenger_protos = { path = "libs/messenger_protos" }
