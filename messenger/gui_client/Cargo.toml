@@ -1,0 +1,42 @@
+[package]
+name = "gui_client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "sync", "time"]}
+tonic = { workspace = true }
+prost = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true } # For OsRng and IV generation
+hex = { workspace = true }
+num-bigint = { workspace = true }
+num-traits = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+rusqlite = { workspace = true }
+
+messenger_protos = { workspace = true }
+dh_crypto = { workspace = true }
+symmetric_cipher = { workspace = true }
+loki97_crypto = { workspace = true }
+twofish_crypto = { workspace = true }
+
+# Egui specific
+eframe = { version = "0.27.2", features = ["persistence"] } # Or latest version
+egui = "0.27.2"
+egui_extras = { version = "0.27.2", features = ["image"] } # For RetainedImage
+
+# Other GUI related
+once_cell = "1.18"
+bytes = "1"
+futures = "0.3"
+tokio-stream = "0.1" # For wrapping MPSC receiver for gRPC stream
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] } # For image display
+
+dirs = "5.0"
+
+rfd = "0.15" # Native file dialogs
+sha2 = "0.10.9"

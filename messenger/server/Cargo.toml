@@ -1,0 +1,33 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# From workspace
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "sync"] }
+tonic = { workspace = true }
+prost = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+hex = { workspace = true } # For DH key debugging potentially
+num-bigint = { workspace = true }
+num-traits = { workspace = true }
+
+
+# Local libs
+messenger_protos = { workspace = true }
+dh_crypto = { workspace = true }
+# symmetric_cipher = { workspace = true } # Server doesn't encrypt/decrypt payload
+# loki97_crypto = { workspace = true }
+# twofish_crypto = { workspace = true }
+
+# Other
+dashmap = "5.5" # For concurrent HashMaps
+futures = "0.3"
+tokio-stream = { version = "0.1", features = ["sync"] }
+bytes = "1"

@@ -1,0 +1,13 @@
+[package]
+name = "twofish_crypto"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "twofish_crypto"
+path = "src/lib.rs"
+
+[dependencies]
+symmetric_cipher = { path = "../symmetric_cipher" }
+tokio = "1.45.0"
+rand = "0.9.1"

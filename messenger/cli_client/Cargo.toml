@@ -1,0 +1,30 @@
+[package]
+name = "cli_client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tonic = { workspace = true }
+prost = { workspace = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+hex = { workspace = true }
+num-bigint = { workspace = true }
+num-traits = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+thiserror = { workspace = true }
+chrono = { workspace = true }
+
+messenger_protos = { workspace = true }
+dh_crypto = { workspace = true }
+symmetric_cipher = { workspace = true }
+loki97_crypto = { workspace = true }
+twofish_crypto = { workspace = true }
+
+clap = { version = "4.4", features = ["derive"] }
+rustyline = "13.0"
+rustyline-derive = "0.9.0"
+tokio-stream = "0.1"
+futures = "0.3" # For StreamExt trait
